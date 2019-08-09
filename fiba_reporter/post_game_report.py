@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fiba_inbounder.game_parser import FibaGameParser
-from fiba_inbounder.formulas import score_bold_md
+from fiba_inbounder.formulas import score_bold_md, update_four_factors
 
 class FibaPostGameReportV7:
     def __init__(self, event_id, game_unit):
@@ -36,7 +36,22 @@ class FibaPostGameReportV7:
                 '|'.join(align_str_list),
                 '|'.join(home_str_list),
                 '|'.join(away_str_list)]
+        return '\n'.join(result_str_list) + '\n'
 
+    def _gen_four_factors_md(self):
+        update_four_factors(self.df)
+
+        header_str_list = '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
+        align_str_list = '|:---|---:|---:|---:|---:|---:|:---:|'
+        ff_str = '|' + self.df[['TeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
+            sep='|',
+            line_terminator='\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+        
+        result_str_list = [header_str_list, align_str_list, ff_str]
         return '\n'.join(result_str_list) + '\n'
 
 if __name__ == '__main__':
