@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from fiba_inbounder.communicator import FibaCommunicator
-from fiba_inbounder.formulas import period_time
+from fiba_inbounder.formulas import game_time
 
 class FibaGameParser:
     @staticmethod
@@ -13,7 +13,7 @@ class FibaGameParser:
             t['Stats']['Name'] = t['Name']
             t['Stats']['TeamCode'] = t['TeamCode']
             t['Stats']['Periods'] = t['Periods']
-            t['Stats']['TP'] = period_time(len(t['Periods']))
+            t['Stats']['TP'] = 5 * game_time(len(t['Periods']))
 
         home_stats_json = teams_json[0]['Stats']
         away_stats_json = teams_json[1]['Stats']

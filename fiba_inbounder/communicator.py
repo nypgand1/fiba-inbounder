@@ -7,7 +7,7 @@ class FibaCommunicator:
     @staticmethod
     def get(url, *args):
         r = requests.get(url, args)
-        LOGGER.info('%s GET %s' % (r, url))
+        LOGGER.info('{r} GET {url}'.format(r=r, url=url))
         return r
 
     @staticmethod
