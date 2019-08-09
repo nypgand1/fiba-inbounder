@@ -7,7 +7,11 @@ def test_gen_period_scores_md_v7():
 
 def test_gen_four_factors_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
-    assert r._gen_four_factors_md() == '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |\n|:---|---:|---:|---:|---:|---:|:---:|\n|LBN|83.1|**60.8%**|17.1%|22.0%|9.4%\n|THA|83.0|43.4%|15.0%|**42.9%**|**21.0%**\n'
+    assert r._gen_four_factors_md() == '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |\n|:---|---:|---:|---:|---:|---:|\n|LBN|83.1|**60.8%**|17.1%|22.0%|9.4%\n|THA|83.0|43.4%|15.0%|**42.9%**|**21.0%**\n'
+
+def test_gen_key_stats_md_v7():
+    r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
+    assert r._gen_key_stats_md() == '| Team | FB | 2nd | Off TO | Paint | Bench |\n|:---|---:|---:|---:|---:|---:|\n|LBN|23|15|20|44|5\n|THA|15|23|21|48|9\n'
 
 if __name__ == '__main__':
     main()

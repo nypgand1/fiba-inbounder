@@ -42,8 +42,8 @@ class FibaPostGameReportV7:
         update_four_factors(self.df)
 
         header_str_list = '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
-        align_str_list = '|:---|---:|---:|---:|---:|---:|:---:|'
-        ff_str = '|' + self.df[['TeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
+        align_str_list = '|:---|---:|---:|---:|---:|---:|'
+        table_str = '|' + self.df[['TeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
             sep='|',
             line_terminator='\n|',
             header=False,
@@ -51,7 +51,21 @@ class FibaPostGameReportV7:
             encoding='utf-8',
             index=False)[:-2]
         
-        result_str_list = [header_str_list, align_str_list, ff_str]
+        result_str_list = [header_str_list, align_str_list, table_str]
+        return '\n'.join(result_str_list) + '\n'
+
+    def _gen_key_stats_md(self):
+        header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
+        align_str_list = '|:---|---:|---:|---:|---:|---:|'
+        table_str = '|' + self.df[['TeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
+            sep='|',
+            line_terminator='\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        result_str_list = [header_str_list, align_str_list, table_str]
         return '\n'.join(result_str_list) + '\n'
 
 if __name__ == '__main__':
