@@ -13,5 +13,9 @@ def test_gen_key_stats_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
     assert r._gen_key_stats_md() == '| Team | FB | 2nd | Off TO | Paint | Bench |\n|:---|---:|---:|---:|---:|---:|\n|LBN|23|15|20|44|5\n|THA|15|23|21|48|9\n'
 
+def test_gen_team_shot_range_md_v7():
+    r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
+    assert r._gen_team_shot_range_md() == 'T_10034\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|32.9%|17/26|**65.4%**\n|Mid 2|15.2%|7/12|**58.3%**\n|Long 2|10.1%|3/8|37.5%\n|3PT|**41.8%**|14/33|**63.6%**\n|---|\n|Total||41/79||\nT_10102\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.7%**|24/48|**50.0%**\n|Mid 2|9.9%|2/9|22.2%\n|Long 2|4.4%|3/4|**75.0%**\n|3PT|33.0%|7/30|35.0%\n|---|\n|Total||36/91||\n'
+
 if __name__ == '__main__':
     main()

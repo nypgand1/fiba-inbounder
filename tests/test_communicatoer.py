@@ -9,7 +9,7 @@ def test_get_game_team_stats_v7():
     assert result['content']['full']['Competitors'][0]['Name'] == 'Pauian'
 
 def test_get_game_play_by_play_v7():
-    result = FibaCommunicator.get_game_play_by_play_v7(event_id='208053', game_unit='24532-18-A', period='Q1')
+    result = FibaCommunicator.get_game_play_by_play_v7(event_id='208053', game_unit='24532-18-A', period_id='Q1')
     assert result['content']['full']['Items'][0]['Action'] == 'Start of Game'
 
 if __name__ == '__main__':

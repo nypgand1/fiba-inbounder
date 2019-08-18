@@ -25,8 +25,8 @@ def update_four_factors(df):
 
 def update_xy_v7(df):
     #Left Corner as (0, 0) in Meters
-    df['X_SIDELINE_M'] = df['SX']/280*15
-    df['Y_BASELINE_M'] = df['SY']/280*14
+    df['X_SIDELINE_M'] = df['SX'].apply(lambda x: float(x)/280*15)
+    df['Y_BASELINE_M'] = df['SY'].apply(lambda y: float(y)/280*14)
 
 def update_zone(df):
     RIM = np.array([(7.5, 1.575)])
@@ -62,6 +62,38 @@ def update_zone(df):
                                     7, #Right Elbow Long 2PT
                                     6))))), #Center Long 2PT
             np.nan))
+    
+    df['FGA'] = np.where((df['AC']=='P3'), 1, 
+            np.where(df['AC']=='P2', 1, np.nan))
+    df['FGM'] = np.where((df['AC']=='P3'), 
+            np.where(df['SU']=='+', 1, 0), 
+            np.where(df['AC'] == 'P2', 
+                np.where(df['SU']=='+', 1, 0), 
+                np.nan))
+    df['PTS'] = np.where((df['AC']=='P3'), 
+            np.where(df['SU']=='+', 3, 0), 
+            np.where(df['AC'] == 'P2', 
+                np.where(df['SU']=='+', 2, 0), 
+                np.nan))
+
+def update_range(df):
+    df['RANGE'] = np.where(df['ZONE']==0, 
+            'Rim',
+            np.where(df['ZONE']<=3,
+                'Mid 2',
+                np.where(df['ZONE']<=8,
+                    'Long 2',
+                    np.where(df['ZONE']<=13,
+                        '3PT',
+                        np.nan))))
+
+def update_range_stats(df):
+    df['FGM/A'] = df['FGM'].map('{:,.0f}'.format) + '/' + df['FGA'].map('{:,.0f}'.format)
+    df['FREQ'] = 100 * (df['FGA'] / df['FGA'].sum()).replace(np.nan, 0)
+    df['EFG'] = 100 * (df['PTS'] / 2 / df['FGA']).replace(np.nan, 0)
+    
+    df['FREQ_STR'] = df['FREQ'].apply(lambda x: '**%.1f%%**' % x if x >= 40 else '%.1f%%' % x)
+    df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
 
 def score_bold_md(score):
     if int(score) >= 20:

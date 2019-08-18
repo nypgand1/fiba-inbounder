@@ -1,27 +1,27 @@
 import numpy as np
 import pandas as pd
 
-from fiba_inbounder.formulas import update_xy_v7, update_zone
+from fiba_inbounder.formulas import update_xy_v7, update_zone, update_range
 
 actions = pd.DataFrame([
-        {'AC': 'P2', 'SX': 140, 'SY': 31.5}, #Rim 
-        {'AC': 'P2', 'SX': 148.0, 'SY': 36.0}, #Rim
+    {'AC': 'P2', 'SX': '140', 'SY': '31.5', 'SU': '-'}, #Rim 
+    {'AC': 'P2', 'SX': '148.0', 'SY': '36', 'SU': '+'}, #Rim
         
-        {'AC': 'P3', 'SX': 238.0, 'SY': 130.0}, #Right Wing 3PT
-        {'AC': 'P3', 'SX': 156.0, 'SY': 167.0}, #Top 3PT
-        {'AC': 'P3', 'SX': 5.0, 'SY': 52.0}, #Left Corner 3PT
-        {'AC': 'P3', 'SX': 263.0, 'SY': 93.0}, #Right Corner 3PT
-        {'AC': 'P3', 'SX': 56.0, 'SY': 146.0}, #Left Wing 3PT
+    {'AC': 'P3', 'SX': '238.0', 'SY': '130', 'SU': '-'}, #Right Wing 3PT
+    {'AC': 'P3', 'SX': '156.0', 'SY': '167', 'SU': '+'}, #Top 3PT
+    {'AC': 'P3', 'SX': '5.0', 'SY': '52'}, #Left Corner 3PT
+    {'AC': 'P3', 'SX': '263', 'SY': '93'}, #Right Corner 3PT
+    {'AC': 'P3', 'SX': '56', 'SY': '146'}, #Left Wing 3PT
 
-        {'AC': 'P2', 'SX': 151.0, 'SY': 104.0}, #Center Mid 2PT
-        {'AC': 'P2', 'SX': 78.0, 'SY': 57.0}, #Left Mid 2PT
-        {'AC': 'P2', 'SX': 201.0, 'SY': 41.0}, #Right Mid 2PT
+    {'AC': 'P2', 'SX': '151', 'SY': '104'}, #Center Mid 2PT
+    {'AC': 'P2', 'SX': '78', 'SY': '57'}, #Left Mid 2PT
+    {'AC': 'P2', 'SX': '201', 'SY': '41'}, #Right Mid 2PT
 
-        {'AC': 'P2', 'SX': 50.0, 'SY': 36.0}, #Left Baseline Long 2PT
-        {'AC': 'P2', 'SX': 226.0, 'SY': 73.0}, #Right Baseline Long 2PT
-        {'AC': 'P2', 'SX': 198.0, 'SY': 109.0}, #Right Elbow Long 2PT
-        {'AC': 'P2', 'SX': 148.0, 'SY': 125.0}, #Center Long 2PT
-        {'AC': 'P2', 'SX': 81.0, 'SY': 104.0},]) #Left Elbow Long 2PT
+    {'AC': 'P2', 'SX': '50', 'SY': '36'}, #Left Baseline Long 2PT
+    {'AC': 'P2', 'SX': '226', 'SY': '73'}, #Right Baseline Long 2PT
+    {'AC': 'P2', 'SX': '198', 'SY': '109'}, #Right Elbow Long 2PT
+    {'AC': 'P2', 'SX': '148', 'SY': '125'}, #Center Long 2PT
+    {'AC': 'P2', 'SX': '81', 'SY': '104'},]) #Left Elbow Long 2PT
  
 def test_update_xy_v7():
     update_xy_v7(actions)
@@ -31,8 +31,8 @@ def test_update_xy_v7():
 
 def test_update_zone():
     update_zone(actions)
-    
     actions_dict = actions.to_dict(orient='records')
+    
     assert actions_dict[0]['DISTANCE'] == 0
     assert actions_dict[1]['DISTANCE'] == 0.48404387134613663
     assert actions_dict[2]['DISTANCE'] == 7.198480742490043
@@ -56,3 +56,36 @@ def test_update_zone():
     assert actions_dict[12]['ZONE'] == 7
     assert actions_dict[13]['ZONE'] == 6
     assert actions_dict[14]['ZONE'] == 5
+
+    assert actions_dict[0]['FGA'] == 1
+    assert actions_dict[0]['FGM'] == 0
+    assert actions_dict[1]['FGA'] == 1
+    assert actions_dict[1]['FGM'] == 1 
+
+    assert actions_dict[2]['FGA'] == 1
+    assert actions_dict[2]['FGM'] == 0
+    assert actions_dict[3]['FGA'] == 1
+    assert actions_dict[3]['FGM'] == 1 
+
+def test_update_range():
+    update_range(actions)
+    actions_dict = actions.to_dict(orient='records')
+    
+    assert actions_dict[0]['RANGE'] == 'Rim'
+    assert actions_dict[1]['RANGE'] == 'Rim'
+    
+    assert actions_dict[2]['RANGE'] == '3PT'
+    assert actions_dict[3]['RANGE'] == '3PT'
+    assert actions_dict[4]['RANGE'] == '3PT'
+    assert actions_dict[5]['RANGE'] == '3PT'
+    assert actions_dict[6]['RANGE'] == '3PT'
+    
+    assert actions_dict[7]['RANGE'] == 'Mid 2'
+    assert actions_dict[8]['RANGE'] == 'Mid 2'
+    assert actions_dict[9]['RANGE'] == 'Mid 2'
+    
+    assert actions_dict[10]['RANGE'] == 'Long 2'
+    assert actions_dict[11]['RANGE'] == 'Long 2'
+    assert actions_dict[12]['RANGE'] == 'Long 2'
+    assert actions_dict[13]['RANGE'] == 'Long 2'
+    assert actions_dict[14]['RANGE'] == 'Long 2'

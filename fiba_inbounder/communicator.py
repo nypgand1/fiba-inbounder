@@ -23,7 +23,7 @@ class FibaCommunicator:
         return r.json()
 
     @staticmethod
-    def get_game_play_by_play_v7(event_id, game_unit, period):
-        url = FIBA_PLAY_BY_PLAY_URL_V7.format(event_id=event_id, game_unit=game_unit, period=period)
+    def get_game_play_by_play_v7(event_id, game_unit, period_id):
+        url = FIBA_PLAY_BY_PLAY_URL_V7.format(event_id=event_id, game_unit=game_unit, period_id=period_id)
         r = FibaCommunicator.get(url)
         return r.json()
