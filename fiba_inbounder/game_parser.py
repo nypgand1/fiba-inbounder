@@ -5,33 +5,49 @@ from fiba_inbounder.formulas import game_time, update_xy_v7, update_zone, update
 
 class FibaGameParser:
     @staticmethod
-    def get_game_teams_json_dataframe_v7(event_id, game_unit):
+    def get_game_stats_dataframe_v7(event_id, game_unit):
         game_json = FibaCommunicator.get_game_team_stats_v7(event_id, game_unit)
         team_stats_json = game_json['content']['full']['Competitors']
-        
+        id_table = dict()
+
         for t in team_stats_json:
+            #Id Table
+            id_table[t['Id']] = t['TeamCode']
+            
+            #Team Stats
             t['Stats']['Name'] = t['Name']
             t['Stats']['TeamCode'] = t['TeamCode']
             t['Stats']['Periods'] = t['Periods']
             t['Stats']['PeriodIdList'] = [p['Id'] for p in t['Periods']]
             t['Stats']['TP'] = 5 * game_time(len(t['Periods']))
+    
+            #Player Stats
+            for p in t['Children']:
+                p['Stats']['TeamCode'] = t['TeamCode']
+                p['Stats']['TeamId'] = t['Id']
+                p['Stats']['JerseyNumber'] = p['JerseyNumber']
+                p['Stats']['Name'] = p['Name']
 
-        home_stats_json = team_stats_json[0]['Stats']
-        away_stats_json = team_stats_json[1]['Stats']
-        
+        home_team_stats_json = team_stats_json[0]['Stats']
+        away_team_stats_json = team_stats_json[1]['Stats']
+       
+        home_player_stats_list = [p['Stats'] for p in team_stats_json[0]['Children']]
+        away_player_stats_list = [p['Stats'] for p in team_stats_json[1]['Children']]
+
         #Oppenent DREB for calculating OREB%
-        home_stats_json['OPP_DR'] = away_stats_json['DR']
-        away_stats_json['OPP_DR'] = home_stats_json['DR']
+        home_team_stats_json['OPP_DR'] = away_team_stats_json['DR']
+        away_team_stats_json['OPP_DR'] = home_team_stats_json['DR']
 
-        df = pd.DataFrame([home_stats_json, away_stats_json])
-        return df
+        team_stats_df = pd.DataFrame([home_team_stats_json, away_team_stats_json])
+        player_stats_df = pd.DataFrame(home_player_stats_list + away_player_stats_list)
+        return team_stats_df, player_stats_df, id_table
 
     @staticmethod
     def get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list):
-        play_by_play_json = [
+        pbp_json_list = [
             FibaCommunicator.get_game_play_by_play_v7(event_id, game_unit, p)['content']['full']['Items']
             for p in period_id_list]
 
-        df = pd.DataFrame(sum(play_by_play_json, []))
+        df = pd.DataFrame(sum(pbp_json_list, []))
         update_xy_v7(df)
         return df

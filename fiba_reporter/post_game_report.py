@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from fiba_inbounder.game_parser import FibaGameParser
-from fiba_inbounder.formulas import score_bold_md, update_four_factors, update_zone, update_range, update_range_stats
+from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, \
+    update_zone, update_range, update_range_stats
 
 class FibaPostGameReport():
     def _gen_period_scores_md(self):
@@ -35,6 +36,7 @@ class FibaPostGameReport():
 
     def _gen_four_factors_md(self):
         update_four_factors(self.team_stats_df)
+        self.team_stats_df['PACE'] = self.team_stats_df['PACE'].mean()
 
         header_str_list = '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
         align_str_list = '|:---|---:|---:|---:|---:|---:|'
@@ -70,11 +72,15 @@ class FibaPostGameReport():
         result_str_list = list()
         shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
         team_shot_range_df = shot_df.sort_values(['ZONE']).groupby(['T1', 'RANGE'], as_index=False, sort=False).sum()
+        
         for t in team_shot_range_df['T1'].unique():
             tsr_df = team_shot_range_df[team_shot_range_df['T1'].str.match(t)]
             update_range_stats(tsr_df)
 
-            result_str_list.append(t)
+            if t in self.id_table.keys():
+                result_str_list.append(self.id_table[t])
+            else:
+                result_str_list.append(t)
             result_str_list.append('| Shot Range | Freq | FGM/A | eFG% |')
             result_str_list.append('|:---:|---:|---:|---:|')
             result_str_list.append('|' + tsr_df[['RANGE', 'FREQ_STR', 'FGM/A', 'EFG_STR']].to_csv(
@@ -89,13 +95,45 @@ class FibaPostGameReport():
     
         return '\n'.join(result_str_list) + '\n'
 
+    def _gen_player_stats_md(self):
+        update_efg(self.player_stats_df)
+        result_str_list = list()
+        
+        for t in self.player_stats_df['TeamCode'].unique():
+            ps_df = self.player_stats_df[self.player_stats_df['TeamCode'].str.match(t)]
+            ps_df = ps_df.sort_values(['PM', 'EFG'], ascending=False)
+            
+            if t in self.id_table.keys():
+                result_str_list.append(self.id_table[t])
+            else:
+                result_str_list.append(t)
+            result_str_list.append('| # | Name | eFG% | +/- |')
+            result_str_list.append('|:---:|:---:|---:|---:|')
+            result_str_list.append('|' + ps_df[['JerseyNumber', 'Name', 'EFG_STR', 'PM']].to_csv(
+                sep='|',
+                line_terminator='\n|',
+                header=False,
+                float_format='%.1f',
+                encoding='utf-8',
+                index=False)[:-2])
+            
+        return '\n'.join(result_str_list) + '\n'
+
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
-        self.team_stats_df = FibaGameParser.get_game_teams_json_dataframe_v7(event_id, game_unit)
+        self.team_stats_df, self.player_stats_df, self.id_table = FibaGameParser.get_game_stats_dataframe_v7(event_id, game_unit)
 
         stats_dict = self.team_stats_df.to_dict(orient='records')
         period_id_list = stats_dict[0]['PeriodIdList']
         self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list)
+
+def main():
+    event_id = raw_input('Event Id? ')
+    game_unit = raw_input('Game Unit? ')
+
+    r = FibaPostGameReportV7(str(event_id), str(game_unit))
+    print r._gen_period_scores_md() + r._gen_four_factors_md() + r._gen_key_stats_md() + \
+        r._gen_team_shot_range_md() + r._gen_player_stats_md()
 
 if __name__ == '__main__':
     main()
