@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fiba_inbounder.game_parser import FibaGameParser
-from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, \
+from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
     update_zone, update_range, update_range_stats
 
 class FibaPostGameReport():
@@ -101,15 +101,16 @@ class FibaPostGameReport():
         
         for t in self.player_stats_df['TeamCode'].unique():
             ps_df = self.player_stats_df[self.player_stats_df['TeamCode'].str.match(t)]
-            ps_df = ps_df.sort_values(['PM', 'EFG'], ascending=False)
+            update_usg(ps_df)
+            ps_df = ps_df.sort_values(['PM', 'SECS', 'EFG', 'USG'], ascending=[False, True, False, True])
             
             if t in self.id_table.keys():
                 result_str_list.append(self.id_table[t])
             else:
                 result_str_list.append(t)
-            result_str_list.append('| # | Name | eFG% | +/- |')
-            result_str_list.append('|:---:|:---:|---:|---:|')
-            result_str_list.append('|' + ps_df[['JerseyNumber', 'Name', 'EFG_STR', 'PM']].to_csv(
+            result_str_list.append('| # | Name | Mins | eFG% | USG% | +/- |')
+            result_str_list.append('|:---:|:---:|---:|---:|---:|---:|')
+            result_str_list.append('|' + ps_df[['JerseyNumber', 'Name', 'TP', 'EFG_STR', 'USG_STR', 'PM']].to_csv(
                 sep='|',
                 line_terminator='\n|',
                 header=False,

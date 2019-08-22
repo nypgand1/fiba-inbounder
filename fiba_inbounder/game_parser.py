@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from fiba_inbounder.communicator import FibaCommunicator
-from fiba_inbounder.formulas import game_time, update_xy_v7, update_zone, update_range
+from fiba_inbounder.formulas import game_time, update_secs_v7, update_xy_v7, update_zone, update_range
 
 class FibaGameParser:
     @staticmethod
@@ -40,6 +40,8 @@ class FibaGameParser:
 
         team_stats_df = pd.DataFrame([home_team_stats_json, away_team_stats_json])
         player_stats_df = pd.DataFrame(home_player_stats_list + away_player_stats_list)
+        update_secs_v7(player_stats_df)
+
         return team_stats_df, player_stats_df, id_table
 
     @staticmethod
