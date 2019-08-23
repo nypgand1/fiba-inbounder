@@ -16,22 +16,18 @@ class FibaPostGameReport():
         for i, p in enumerate(stats_dict[0]['PeriodIdList']):
             header_str_list.append(p)
             align_str_list.append('---:')
-            home_str_list.append('*{half}* \| {full}'.format(
-                half=stats_dict[0]['Periods'][i]['HalfTimeScore'],
-                full=score_bold_md(stats_dict[0]['Periods'][i]['Score'])))
-            away_str_list.append('*{half}* \| {full}'.format(
-                    half=stats_dict[1]['Periods'][i]['HalfTimeScore'],
-                    full=score_bold_md(stats_dict[1]['Periods'][i]['Score'])))
+            home_str_list.append(score_bold_md(stats_dict[0]['Periods'][i]['Score']))
+            away_str_list.append(score_bold_md(stats_dict[1]['Periods'][i]['Score']))
         
-        header_str_list.append('Total')
-        align_str_list.append('---:')
+        header_str_list.append('Total|')
+        align_str_list.append('---:|')
         home_str_list.append(str(stats_dict[0]['PTS']))
         away_str_list.append(str(stats_dict[1]['PTS']))
 
         result_str_list = ['|'.join(header_str_list),
                 '|'.join(align_str_list),
-                '|'.join(home_str_list),
-                '|'.join(away_str_list)]
+                '|'.join(home_str_list) + '|',
+                '|'.join(away_str_list) + '|']
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_four_factors_md(self):
@@ -39,10 +35,10 @@ class FibaPostGameReport():
         self.team_stats_df['PACE'] = self.team_stats_df['PACE'].mean()
 
         header_str_list = '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
-        align_str_list = '|:---|---:|---:|---:|---:|---:|'
+        align_str_list = '|:---:|---:|---:|---:|---:|---:|'
         table_str = '|' + self.team_stats_df[['TeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
             sep='|',
-            line_terminator='\n|',
+            line_terminator='|\n|',
             header=False,
             float_format='%.1f',
             encoding='utf-8',
@@ -53,10 +49,10 @@ class FibaPostGameReport():
 
     def _gen_key_stats_md(self):
         header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
-        align_str_list = '|:---|---:|---:|---:|---:|---:|'
+        align_str_list = '|:---:|---:|---:|---:|---:|---:|'
         table_str = '|' + self.team_stats_df[['TeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
             sep='|',
-            line_terminator='\n|',
+            line_terminator='|\n|',
             header=False,
             float_format='%.1f',
             encoding='utf-8',
@@ -85,7 +81,7 @@ class FibaPostGameReport():
             result_str_list.append('|:---:|---:|---:|---:|')
             result_str_list.append('|' + tsr_df[['RANGE', 'FREQ_STR', 'FGM/A', 'EFG_STR']].to_csv(
                 sep='|',
-                line_terminator='\n|',
+                line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
@@ -112,7 +108,7 @@ class FibaPostGameReport():
             result_str_list.append('|:---:|:---:|---:|---:|---:|---:|')
             result_str_list.append('|' + ps_df[['JerseyNumber', 'Name', 'TP', 'EFG_STR', 'USG_STR', 'PM']].to_csv(
                 sep='|',
-                line_terminator='\n|',
+                line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
@@ -133,8 +129,9 @@ def main():
     game_unit = raw_input('Game Unit? ')
 
     r = FibaPostGameReportV7(str(event_id), str(game_unit))
-    print r._gen_period_scores_md() + r._gen_four_factors_md() + r._gen_key_stats_md() + \
-        r._gen_team_shot_range_md() + r._gen_player_stats_md()
+    print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+        '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
+        '\n## Advanced Player Stats\n' + r._gen_player_stats_md()
 
 if __name__ == '__main__':
     main()
