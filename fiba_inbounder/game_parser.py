@@ -51,7 +51,7 @@ class FibaGameParser:
         return df
 
     @staticmethod
-    def get_game_details_v7(event_id, game_unit):
+    def get_game_details_dict_v7(event_id, game_unit):
         dtl_dict = FibaCommunicator.get_game_details_v7(event_id, game_unit)['content']['full']['Competitors']
 
         id_table = {k: ((v['TeamCode']) if v['IsTeam'] else (v['FirstNameShort']+v['Name']))
@@ -59,7 +59,7 @@ class FibaGameParser:
 
         starters_dict = dict()
         for t in [k for k, v in dtl_dict.iteritems() if v['IsTeam']]:
-            starters_dict[t] = [k for k, v in dtl_dict.iteritems() 
-                    if (not v['IsTeam']) and v['Starter'] and v['ParentId']==t]
+            starters_dict[t] = {k for k, v in dtl_dict.iteritems() 
+                    if (not v['IsTeam']) and v['Starter'] and v['ParentId']==t}
 
         return id_table, starters_dict
