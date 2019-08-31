@@ -1,7 +1,7 @@
 from fiba_inbounder.game_parser import FibaGameParser
 
 def test_get_game_stats_dataframe_v7():
-    team_df, player_df, id_table = FibaGameParser.get_game_stats_dataframe_v7(event_id='208053', game_unit='24532-18-A')
+    team_df, player_df = FibaGameParser.get_game_stats_dataframe_v7(event_id='208053', game_unit='24532-18-A')
     
     stats_dict = team_df.to_dict(orient='records')
     assert stats_dict[0]['Name'] == 'Pauian'
@@ -10,11 +10,8 @@ def test_get_game_stats_dataframe_v7():
     assert stats_dict[1]['TeamCode'] == 'THA'
     assert stats_dict[0]['TP'] == 200
 
-    assert id_table['T_10036'] == 'TPE'
-    assert id_table['T_10102'] == 'THA'
-
     #OT1
-    team_df, player_df, id_table = FibaGameParser.get_game_stats_dataframe_v7(event_id='208053', game_unit='24527-B-1')
+    team_df, player_df = FibaGameParser.get_game_stats_dataframe_v7(event_id='208053', game_unit='24527-B-1')
     stats_dict = team_df.to_dict(orient='records')
     assert stats_dict[1]['TP'] == 225
 

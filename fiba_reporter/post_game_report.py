@@ -118,7 +118,8 @@ class FibaPostGameReport():
 
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
-        self.team_stats_df, self.player_stats_df, self.id_table = FibaGameParser.get_game_stats_dataframe_v7(event_id, game_unit)
+        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_v7(event_id, game_unit)
+        self.id_table, self.starters_dict = FibaGameParser.get_game_details_v7(event_id, game_unit)
 
         stats_dict = self.team_stats_df.to_dict(orient='records')
         period_id_list = stats_dict[0]['PeriodIdList']

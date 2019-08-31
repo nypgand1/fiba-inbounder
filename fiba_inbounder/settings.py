@@ -9,3 +9,5 @@ FIBA_DATA_URL_V5 = 'https://www.fibalivestats.com/data/{match_id}/data.json'
 
 FIBA_TEAM_STATS_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{event_id}_GAME_{game_unit}_JSON.json'
 FIBA_PLAY_BY_PLAY_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{event_id}_GAMEACTIONS_{game_unit}_{period_id}_JSON.json'
+
+FIBA_DETAIL_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{event_id}_COMPDETAILS_{game_unit}_JSON.json'

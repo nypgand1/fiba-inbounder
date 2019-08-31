@@ -8,12 +8,8 @@ class FibaGameParser:
     def get_game_stats_dataframe_v7(event_id, game_unit):
         game_json = FibaCommunicator.get_game_team_stats_v7(event_id, game_unit)
         team_stats_json = game_json['content']['full']['Competitors']
-        id_table = dict()
 
         for t in team_stats_json:
-            #Id Table
-            id_table[t['Id']] = t['TeamCode']
-            
             #Team Stats
             t['Stats']['Name'] = t['Name']
             t['Stats']['TeamCode'] = t['TeamCode']
@@ -42,7 +38,7 @@ class FibaGameParser:
         player_stats_df = pd.DataFrame(home_player_stats_list + away_player_stats_list)
         update_secs_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df, id_table
+        return team_stats_df, player_stats_df
 
     @staticmethod
     def get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list):
@@ -53,3 +49,17 @@ class FibaGameParser:
         df = pd.DataFrame(sum(pbp_json_list, []))
         update_xy_v7(df)
         return df
+
+    @staticmethod
+    def get_game_details_v7(event_id, game_unit):
+        dtl_dict = FibaCommunicator.get_game_details_v7(event_id, game_unit)['content']['full']['Competitors']
+
+        id_table = {k: ((v['TeamCode']) if v['IsTeam'] else (v['FirstNameShort']+v['Name']))
+                for k, v in dtl_dict.iteritems()}
+
+        starters_dict = dict()
+        for t in [k for k, v in dtl_dict.iteritems() if v['IsTeam']]:
+            starters_dict[t] = [k for k, v in dtl_dict.iteritems() 
+                    if (not v['IsTeam']) and v['Starter'] and v['ParentId']==t]
+
+        return id_table, starters_dict
