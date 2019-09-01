@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from fiba_inbounder.communicator import FibaCommunicator
-from fiba_inbounder.formulas import game_time, update_secs_v7, update_xy_v7, update_zone, update_range
+from fiba_inbounder.formulas import game_time, update_secs_v7, update_xy_v7, update_stats_v7
 
 class FibaGameParser:
     @staticmethod
@@ -24,18 +24,18 @@ class FibaGameParser:
                 p['Stats']['JerseyNumber'] = p['JerseyNumber']
                 p['Stats']['Name'] = p['Name']
 
-        home_team_stats_json = team_stats_json[0]['Stats']
-        away_team_stats_json = team_stats_json[1]['Stats']
+        team_a_stats_json = team_stats_json[0]['Stats']
+        team_b_stats_json = team_stats_json[1]['Stats']
        
-        home_player_stats_list = [p['Stats'] for p in team_stats_json[0]['Children']]
-        away_player_stats_list = [p['Stats'] for p in team_stats_json[1]['Children']]
+        team_a_player_stats_list = [p['Stats'] for p in team_stats_json[0]['Children']]
+        team_b_player_stats_list = [p['Stats'] for p in team_stats_json[1]['Children']]
 
         #Oppenent DREB for calculating OREB%
-        home_team_stats_json['OPP_DR'] = away_team_stats_json['DR']
-        away_team_stats_json['OPP_DR'] = home_team_stats_json['DR']
+        team_a_stats_json['OPP_DR'] = team_b_stats_json['DR']
+        team_b_stats_json['OPP_DR'] = team_a_stats_json['DR']
 
-        team_stats_df = pd.DataFrame([home_team_stats_json, away_team_stats_json])
-        player_stats_df = pd.DataFrame(home_player_stats_list + away_player_stats_list)
+        team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
+        player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
         update_secs_v7(player_stats_df)
 
         return team_stats_df, player_stats_df
@@ -48,6 +48,7 @@ class FibaGameParser:
 
         df = pd.DataFrame(sum(pbp_json_list, []))
         update_xy_v7(df)
+        update_stats_v7(df)
         return df
 
     @staticmethod
@@ -57,9 +58,13 @@ class FibaGameParser:
         id_table = {k: ((v['TeamCode']) if v['IsTeam'] else (v['FirstNameShort']+v['Name']))
                 for k, v in dtl_dict.iteritems()}
 
-        starters_dict = dict()
-        for t in [k for k, v in dtl_dict.iteritems() if v['IsTeam']]:
-            starters_dict[t] = {k for k, v in dtl_dict.iteritems() 
-                    if (not v['IsTeam']) and v['Starter'] and v['ParentId']==t}
+        all_starters = [v['Id'] for v in dtl_dict.itervalues() if v['Starter']]
+        all_teams = [v['Id'] for v in sorted(dtl_dict.itervalues(), cmp=lambda x,y: cmp(x['Order'], y['Order'])) if v['IsTeam']]
+       
+        starter_dict = dict()
+        starter_dict[all_teams[0]] = {'TeamTag': 'TA', 'Starters': {v['Id'] for v in dtl_dict.itervalues() 
+            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[0]}}
+        starter_dict[all_teams[1]] = {'TeamTag': 'TB', 'Starters': {v['Id'] for v in dtl_dict.itervalues() 
+            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[1]}}
 
-        return id_table, starters_dict
+        return id_table, starter_dict

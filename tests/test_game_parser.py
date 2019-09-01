@@ -16,11 +16,14 @@ def test_get_game_stats_dataframe_v7():
     assert stats_dict[1]['TP'] == 225
 
 def test_get_game_details_dict_v7():
-    id_table, starters_dict = FibaGameParser.get_game_details_dict_v7(event_id='208153', game_unit='25098-A-3')
+    id_table, starter_dict = FibaGameParser.get_game_details_dict_v7(event_id='208153', game_unit='25098-A-3')
 
     assert id_table['T_57840'] == 'FUB'
     assert id_table['P_205412'] == 'W.Tsai'
-    assert {id_table[p] for p in starters_dict['T_57840']} == {'J.Lewis', 'P.Chang', 'W.Tsai', 'C.Lin', 'C.Garcia'}
+    assert {id_table[p] for p in starter_dict['T_65245']['Starters']} == {'W.Suttisin', 'B.Fields III', 'X.Alexander', 'C.Jakrawan', 'N.Muangboon'}
+    assert starter_dict['T_65245']['TeamTag'] == 'TA'
+    assert {id_table[p] for p in starter_dict['T_57840']['Starters']} == {'J.Lewis', 'P.Chang', 'W.Tsai', 'C.Lin', 'C.Garcia'}
+    assert starter_dict['T_57840']['TeamTag'] == 'TB'
 
 if __name__ == '__main__':
     main()
