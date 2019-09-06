@@ -20,10 +20,8 @@ def test_get_game_details_dict_v7():
 
     assert id_table['T_57840'] == 'FUB'
     assert id_table['P_205412'] == 'W.Tsai'
-    assert {id_table[p] for p in starter_dict['T_65245']['Starters']} == {'W.Suttisin', 'B.Fields III', 'X.Alexander', 'C.Jakrawan', 'N.Muangboon'}
-    assert starter_dict['T_65245']['TeamTag'] == 'TA'
-    assert {id_table[p] for p in starter_dict['T_57840']['Starters']} == {'J.Lewis', 'P.Chang', 'W.Tsai', 'C.Lin', 'C.Garcia'}
-    assert starter_dict['T_57840']['TeamTag'] == 'TB'
+    assert {id_table[p] for p in starter_dict['T_65245']} == {'W.Suttisin', 'B.Fields III', 'X.Alexander', 'C.Jakrawan', 'N.Muangboon'}
+    assert {id_table[p] for p in starter_dict['T_57840']} == {'J.Lewis', 'P.Chang', 'W.Tsai', 'C.Lin', 'C.Garcia'}
 
 if __name__ == '__main__':
     main()

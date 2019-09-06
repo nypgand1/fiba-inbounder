@@ -45,7 +45,7 @@ def update_four_factors(df):
     df['FT_RATE_STR'] = df['FT_RATE'].apply(lambda x: '**%.1f%%**' % x if x >= 20 else '%.1f%%' % x)
 
 def update_secs_v7(df):
-        df['SECS'] = df['TP'].apply(lambda x: base60(x.split(':')))
+    df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60(x.split(':')))
 
 def update_xy_v7(df):
     #Left Corner as (0, 0) in Meters
@@ -65,6 +65,7 @@ def update_stats_v7(df):
    
     df['FTM'] = np.where((df['AC']=='FT') & (df['SU']=='+'), 1, 0)
     df['FTA'] = np.where(df['AC']=='FT', 1, 0)
+    df['PTS'] = df['FGPTS'] + df['FTM']
     
     df['OR'] = np.where((df['AC'].str.contains('REB')) & (df['Z1']=='O'), 1, 0)
     df['DR'] = np.where((df['AC'].str.contains('REB')) & (df['Z1']=='D'), 1, 0)
@@ -132,19 +133,19 @@ def update_lineup(df, starter_dict):
     for i in range(len(pbp_dict)):
         if i == 0:
             for t, sd in starter_dict.iteritems():
-                pbp_dict[i][sd['TeamTag']] = sd['Starters'].copy()
+                pbp_dict[i][t] = sd.copy()
             continue
         
-        pbp_dict[i]['TA'] = pbp_dict[i-1]['TA'].copy()
-        pbp_dict[i]['TB'] = pbp_dict[i-1]['TB'].copy()
+        for t in starter_dict.keys():
+            pbp_dict[i][t] = pbp_dict[i-1][t].copy()
         
         if pbp_dict[i-1]['AC'] == 'SUBST':
             t = pbp_dict[i-1]['T1']
             if pbp_dict[i-1]['SU'] == '+':
-                pbp_dict[i][starter_dict[t]['TeamTag']].add(pbp_dict[i-1]['C1'])
+                pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
             elif pbp_dict[i-1]['SU'] == '-':
-                pbp_dict[i][starter_dict[t]['TeamTag']].remove(pbp_dict[i-1]['C1'])
+                pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
     
     pbp_df = pd.DataFrame(pbp_dict)
-    df['TA'] = pbp_df['TA']
-    df['TB'] = pbp_df['TB']
+    for t in starter_dict.keys():
+        df[t] = pbp_df[t]

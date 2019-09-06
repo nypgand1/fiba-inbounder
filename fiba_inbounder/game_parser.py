@@ -62,9 +62,9 @@ class FibaGameParser:
         all_teams = [v['Id'] for v in sorted(dtl_dict.itervalues(), cmp=lambda x,y: cmp(x['Order'], y['Order'])) if v['IsTeam']]
        
         starter_dict = dict()
-        starter_dict[all_teams[0]] = {'TeamTag': 'TA', 'Starters': {v['Id'] for v in dtl_dict.itervalues() 
-            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[0]}}
-        starter_dict[all_teams[1]] = {'TeamTag': 'TB', 'Starters': {v['Id'] for v in dtl_dict.itervalues() 
-            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[1]}}
+        starter_dict[all_teams[0]] = {v['Id'] for v in dtl_dict.itervalues() 
+            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[0]}
+        starter_dict[all_teams[1]] = {v['Id'] for v in dtl_dict.itervalues() 
+            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[1]}
 
         return id_table, starter_dict
