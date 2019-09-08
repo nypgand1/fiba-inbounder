@@ -7,14 +7,30 @@ def game_time(q):
         return 40 + 5 * (q-4)
     return 10 * q
 
-def base60(num_list):
-    result = 0
+def base60_from(time_str):
+    num_list = time_str.split(':')
+    secs = 0
     for i in num_list:
-        result = result * 60 + int(i)
-    return result
+        secs = secs * 60 + int(i)
+    return secs
+
+def base60_to(secs):
+    secs = int(secs)
+    num_list = list()
+    while secs >= 60:
+        d = secs / 60
+        num_list.append('%02d' % (secs - 60*d))
+        secs = d
+    num_list.append('%02d' % secs)
+
+    if len(num_list) == 1:
+       num_list.append('00')
+    num_list.reverse()
+
+    return ':'.join(num_list)
 
 def time_diff(time_str_before, time_str_after):
-    return base60(time_str_before.split(':')) - base60(time_str_after.split(':'))
+    return base60_from(time_str_before) - base60_from(time_str_after)
 
 def score_bold_md(score):
     if int(score) >= 20:
@@ -31,21 +47,33 @@ def update_usg(df):
             (df['POSS_WO_OR'].sum() * df['SECS'])).replace(np.nan, 0)
     df['USG_STR'] = df['USG'].apply(lambda x: '**%.1f%%**' % x if x >= 25 else '%.1f%%' % x)
 
-def update_four_factors(df):
+def update_poss(df):
     df['POSS'] = df['FGA'] + 0.44*df['FTA'] + df['TO'] - df['OR']
-   
-    update_efg(df)
-    df['PACE'] = 40 * 5 * (df['POSS'] / df['TP']).replace(np.nan, 0)
+    #OR and then FTA
+    df['POSS'] = np.where(df['POSS'] >= 0, df['POSS'], 1)
+
+def update_to_ratio(df):
+    update_poss(df)
     df['TO_RATIO'] = 100 * (df['TO'] / df['POSS']).replace(np.nan, 0)
+    df['TO_RATIO_STR'] = df['TO_RATIO'].apply(lambda x: '**%.1f%%**' % x if x <= 15 else '%.1f%%' % x)
+
+def update_pace(df):
+    update_poss(df)
+    df['PACE'] = 40 * 60 * 5 * (df['POSS'] / df['SECS']).replace(np.nan, 0)
+
+def update_four_factors(df):
+    update_pace(df)
+    update_efg(df)
+    update_to_ratio(df)
+
     df['OR_PCT'] = 100 * (df['OR'] / (df['OR'] + df['OPP_DR'])).replace(np.nan, 0)
     df['FT_RATE'] = 100 * (df['FTM'] / df['PTS']).replace(np.nan, 0)
 
-    df['TO_RATIO_STR'] = df['TO_RATIO'].apply(lambda x: '**%.1f%%**' % x if x <= 15 else '%.1f%%' % x)
     df['OR_PCT_STR'] = df['OR_PCT'].apply(lambda x: '**%.1f%%**' % x if x >= 30 else '%.1f%%' % x)
     df['FT_RATE_STR'] = df['FT_RATE'].apply(lambda x: '**%.1f%%**' % x if x >= 20 else '%.1f%%' % x)
 
 def update_secs_v7(df):
-    df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60(x.split(':')))
+    df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
 
 def update_xy_v7(df):
     #Left Corner as (0, 0) in Meters
@@ -132,8 +160,9 @@ def update_lineup(df, starter_dict):
 
     for i in range(len(pbp_dict)):
         if i == 0:
-            for t, sd in starter_dict.iteritems():
-                pbp_dict[i][t] = sd.copy()
+            for t, s in starter_dict.iteritems():
+                pbp_dict[i][t] = s.copy()
+                pbp_dict[i]['SECS'] = 0
             continue
         
         for t in starter_dict.keys():
@@ -145,7 +174,51 @@ def update_lineup(df, starter_dict):
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
             elif pbp_dict[i-1]['SU'] == '-':
                 pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
-    
+
+        if pbp_dict[i-1]['AC'] == 'ENDP':
+            pbp_dict[i]['SECS'] = 0
+        else:
+            pbp_dict[i]['SECS'] = time_diff(pbp_dict[i-1]['Time'], pbp_dict[i]['Time'])
+
     pbp_df = pd.DataFrame(pbp_dict)
+    def to_sorted_tuple(x):
+        result = list(x)
+        result.sort()
+        return tuple(result)
     for t in starter_dict.keys():
-        df[t] = pbp_df[t]
+        df[t] = pbp_df[t].apply(lambda x: to_sorted_tuple(x))
+    df['SECS'] = pbp_df['SECS']
+
+def get_lineup_stats(df, team_id, id_table=None):
+    update_efg(df)
+    update_to_ratio(df)
+
+    df['EFG'] = np.where(df['T1'].str.match(team_id), df['EFG'], 0)
+    df['TO_RATIO'] = np.where(df['T1'].str.match(team_id), df['TO_RATIO'], 0)
+    df['PM'] = np.where(df['T1'].str.match(team_id), df['PTS'], -df['PTS'])
+    df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
+    df['DEFRTG'] = 100 * np.where(~df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
+    df['A/T'] = np.where(df['T1'].str.match(team_id), (df['AS'] / df['TO']), 0)
+   
+    result_df = df.groupby([team_id], as_index=False, sort=False).sum()
+    result_df = result_df[(result_df['SECS']>0) | (~(result_df['POSS']==0))]
+
+    update_pace(result_df)
+    result_df['PACE'] = result_df['PACE'] / 10
+    result_df['TP'] = result_df['SECS'].apply(lambda x: base60_to(x))
+    
+    def lineup_name(team_lineup, secs, offrtg, defrtg, pm):
+        name_str = str([id_table[p] if p in id_table else p for p in team_lineup])
+        name_str = name_str.replace("[u'", "").replace("', u'", ", ").replace("']", "")
+        if ((secs>2*60) and (offrtg>=100) and (defrtg <100)) or (pm>=10):
+            return '**%s**' % name_str
+        else:    
+            return name_str
+    result_df['LINEUP_NAME'] = result_df.apply(lambda x: lineup_name(x[team_id], x['SECS'], x['OFFRTG'], x['DEFRTG'], x['PM']), axis=1)
+
+    result_df['EFG_STR'] = result_df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
+    result_df['TO_RATIO_STR'] = result_df['TO_RATIO'].apply(lambda x: '**%.1f%%**' % x if x <= 15 else '%.1f%%' % x)
+    result_df['A/T_STR'] = result_df['A/T'].apply(lambda x: '**%.2f**' % x if x >= 1.5 else '%.2f' % x)
+    result_df['NETRTG'] = result_df['OFFRTG'] - result_df['DEFRTG']
+
+    return result_df[[team_id, 'LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']]

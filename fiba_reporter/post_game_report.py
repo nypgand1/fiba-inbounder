@@ -2,7 +2,7 @@
 
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_range, update_range_stats
+    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats
 
 class FibaPostGameReport():
     def _gen_period_scores_md(self):
@@ -116,6 +116,31 @@ class FibaPostGameReport():
             
         return '\n'.join(result_str_list) + '\n'
 
+    def _gen_lineup_stats_md(self):
+        update_lineup(self.pbp_df, self.starter_dict)
+        result_str_list = list()
+
+        for t in self.starter_dict.keys():
+            team_lineup_df = self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
+            tls_df = get_lineup_stats(team_lineup_df, t, self.id_table)
+            tls_df = tls_df.sort_values(['NETRTG', 'PM', 'EFG'], ascending=[False, False, False])
+            
+            if t in self.id_table.keys():
+                result_str_list.append(self.id_table[t])
+            else:
+                result_str_list.append(t)
+            result_str_list.append('| Lineups | Mins | Pace | +/- | eFG% | TO Ratio | A/T | OffRtg | DefRtg | NetRtg |')
+            result_str_list.append('|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+            result_str_list.append('|' + tls_df[['LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']].to_csv(
+                sep='|',
+                line_terminator='|\n|',
+                header=False,
+                float_format='%.1f',
+                encoding='utf-8',
+                index=False)[:-2])
+ 
+        return '\n'.join(result_str_list) + '\n'
+
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
         self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_v7(event_id, game_unit)
@@ -132,7 +157,8 @@ def main():
     r = FibaPostGameReportV7(str(event_id), str(game_unit))
     print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
         '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
-        '\n## Advanced Player Stats\n' + r._gen_player_stats_md()
+        '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
+        '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
 
 if __name__ == '__main__':
     main()

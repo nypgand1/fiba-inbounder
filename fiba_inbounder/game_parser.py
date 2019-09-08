@@ -15,7 +15,7 @@ class FibaGameParser:
             t['Stats']['TeamCode'] = t['TeamCode']
             t['Stats']['Periods'] = t['Periods']
             t['Stats']['PeriodIdList'] = [p['Id'] for p in t['Periods']]
-            t['Stats']['TP'] = 5 * game_time(len(t['Periods']))
+            t['Stats']['SECS'] = 60 * 5 * game_time(len(t['Periods']))
     
             #Player Stats
             for p in t['Children']:
@@ -58,13 +58,8 @@ class FibaGameParser:
         id_table = {k: ((v['TeamCode']) if v['IsTeam'] else (v['FirstNameShort']+v['Name']))
                 for k, v in dtl_dict.iteritems()}
 
-        all_starters = [v['Id'] for v in dtl_dict.itervalues() if v['Starter']]
-        all_teams = [v['Id'] for v in sorted(dtl_dict.itervalues(), cmp=lambda x,y: cmp(x['Order'], y['Order'])) if v['IsTeam']]
-       
-        starter_dict = dict()
-        starter_dict[all_teams[0]] = {v['Id'] for v in dtl_dict.itervalues() 
-            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[0]}
-        starter_dict[all_teams[1]] = {v['Id'] for v in dtl_dict.itervalues() 
-            if (not v['IsTeam']) and v['Starter'] and v['ParentId']==all_teams[1]}
-
+        team_id_list = [k for k, v in dtl_dict.iteritems() if v['IsTeam']]
+        starter_dict = {t: {v['Id'] for v in dtl_dict.itervalues() if (not v['IsTeam']) and v['Starter'] and v['ParentId']==t} 
+                for t in team_id_list}
+        
         return id_table, starter_dict
