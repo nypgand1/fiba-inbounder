@@ -174,6 +174,13 @@ def update_lineup(df, starter_dict):
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
             elif pbp_dict[i-1]['SU'] == '-':
                 pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
+            elif 'C2' in pbp_dict[i-1]:
+                print '%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time'])
+                print pbp_dict[i][t]
+                pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
+                print pbp_dict[i][t]
+                pbp_dict[i][t].remove(pbp_dict[i-1]['C2'])
+                print pbp_dict[i][t]
 
         if pbp_dict[i-1]['AC'] == 'ENDP':
             pbp_dict[i]['SECS'] = 0
@@ -208,8 +215,10 @@ def get_lineup_stats(df, team_id, id_table=None):
     result_df['TP'] = result_df['SECS'].apply(lambda x: base60_to(x))
     
     def lineup_name(team_lineup, secs, offrtg, defrtg, pm):
-        name_str = str([id_table[p] if p in id_table else p for p in team_lineup])
-        name_str = name_str.replace("[u'", "").replace("', u'", ", ").replace("']", "")
+        name_list = [id_table[p] if p in id_table else p for p in team_lineup]
+        name_list.sort()
+        name_str = str(name_list)
+        name_str = name_str.replace("['", "").replace("', '", ", ").replace("']", "")
         if ((secs>2*60) and (offrtg>=100) and (defrtg <100)) or (pm>=10):
             return '**%s**' % name_str
         else:    
