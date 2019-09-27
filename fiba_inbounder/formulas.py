@@ -155,7 +155,7 @@ def update_range_stats(df):
     df['FREQ_STR'] = df['FREQ'].apply(lambda x: '**%.1f%%**' % x if x >= 40 else '%.1f%%' % x)
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
 
-def update_lineup(df, starter_dict):
+def update_lineup_v7(df, starter_dict):
     pbp_dict = df.to_dict(orient='records')
 
     for i in range(len(pbp_dict)):
@@ -230,4 +230,4 @@ def get_lineup_stats(df, team_id, id_table=None):
     result_df['A/T_STR'] = result_df['A/T'].apply(lambda x: '**%.2f**' % x if x >= 1.5 else '%.2f' % x)
     result_df['NETRTG'] = result_df['OFFRTG'] - result_df['DEFRTG']
 
-    return result_df[[team_id, 'LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']]
+    return result_df[[team_id, 'LINEUP_NAME', 'SECS', 'TP', 'PACE', 'PM', 'EFG', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']]

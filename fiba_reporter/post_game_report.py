@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats
+    update_zone, update_range, update_range_stats, update_lineup_v7, get_lineup_stats
 
 class FibaPostGameReport():
     def _gen_period_scores_md(self):
@@ -117,10 +118,11 @@ class FibaPostGameReport():
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_lineup_stats_md(self):
-        update_lineup(self.pbp_df, self.starter_dict)
         result_str_list = list()
 
-        for t in self.starter_dict.keys():
+        for t in self.pbp_df['T1'].unique():
+            if (not t) or pd.isna(t):
+                continue
             team_lineup_df = self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
             tls_df = get_lineup_stats(team_lineup_df, t, self.id_table)
             tls_df = tls_df.sort_values(['NETRTG', 'PM', 'EFG'], ascending=[False, False, False])
@@ -149,6 +151,9 @@ class FibaPostGameReportV7(FibaPostGameReport):
         stats_dict = self.team_stats_df.to_dict(orient='records')
         period_id_list = stats_dict[0]['PeriodIdList']
         self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list)
+
+        if all([len(s)==5 for s in self.starter_dict.itervalues()]):
+            update_lineup_v7(self.pbp_df, self.starter_dict)
 
 def main():
     event_id = raw_input('Event Id? ')
