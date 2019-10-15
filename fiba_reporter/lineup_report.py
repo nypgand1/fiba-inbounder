@@ -82,15 +82,16 @@ class FibaLineupReportV7(FibaLineupReport):
 
 def main():
     num_games = raw_input('How Many Games? ')
+    secs_above = raw_input('How Many Secs above in Lineup Stats? ')
     event_game_list = list()
     for g in range(int(num_games)):
         print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
-        event_id = raw_input('Event Id? ')
-        game_unit = raw_input('Game Unit? ')
+        event_id = raw_input('\tEvent Id? ')
+        game_unit = raw_input('\tGame Unit? ')
         event_game_list.append((str(event_id), str(game_unit)))
 
     r = FibaLineupReportV7(event_game_list)
-    print '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md() + \
+    print '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md(secs_above=int(secs_above)) + \
         '\n## On/Off Stats\n' + r._gen_on_off_stats_md()
 
 if __name__ == '__main__':
