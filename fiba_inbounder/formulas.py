@@ -17,11 +17,12 @@ def base60_from(time_str):
 def base60_to(secs):
     secs = int(secs)
     num_list = list()
-    while secs >= 60:
+    if secs >= 60:
         d = secs / 60
         num_list.append('%02d' % (secs - 60*d))
-        secs = d
-    num_list.append('%02d' % secs)
+        num_list.append('%02d' % d)
+    else:
+        num_list.append('%02d' % secs)
 
     if len(num_list) == 1:
        num_list.append('00')
@@ -71,6 +72,11 @@ def update_four_factors(df):
 
     df['OR_PCT_STR'] = df['OR_PCT'].apply(lambda x: '**%.1f%%**' % x if x >= 30 else '%.1f%%' % x)
     df['FT_RATE_STR'] = df['FT_RATE'].apply(lambda x: '**%.1f%%**' % x if x >= 20 else '%.1f%%' % x)
+
+def update_rtg(df, team_id):
+    update_poss(df)
+    df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
+    df['DEFRTG'] = 100 * np.where(~df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
 
 def update_secs_v7(df):
     df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
@@ -148,14 +154,14 @@ def update_range(df):
                         np.nan))))
 
 def update_range_stats(df):
-    df['FGM/A'] = df['FGM'].map('{:,.0f}'.format) + '/' + df['FGA'].map('{:,.0f}'.format)
+    df['FGM/A'] = df.apply(lambda x: '{fgm}/{fga}'.format(fgm=x['FGM'], fga=x['FGA']), axis=1) 
     df['FREQ'] = 100 * (df['FGA'] / df['FGA'].sum()).replace(np.nan, 0)
     df['EFG'] = 100 * (df['FGPTS'] / 2 / df['FGA']).replace(np.nan, 0)
     
     df['FREQ_STR'] = df['FREQ'].apply(lambda x: '**%.1f%%**' % x if x >= 40 else '%.1f%%' % x)
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
 
-def update_lineup(df, starter_dict):
+def update_lineup_v7(df, starter_dict):
     pbp_dict = df.to_dict(orient='records')
 
     for i in range(len(pbp_dict)):
@@ -199,12 +205,11 @@ def update_lineup(df, starter_dict):
 def get_lineup_stats(df, team_id, id_table=None):
     update_efg(df)
     update_to_ratio(df)
+    update_rtg(df, team_id)
 
     df['EFG'] = np.where(df['T1'].str.match(team_id), df['EFG'], 0)
     df['TO_RATIO'] = np.where(df['T1'].str.match(team_id), df['TO_RATIO'], 0)
     df['PM'] = np.where(df['T1'].str.match(team_id), df['PTS'], -df['PTS'])
-    df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
-    df['DEFRTG'] = 100 * np.where(~df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
     df['A/T'] = np.where(df['T1'].str.match(team_id), (df['AS'] / df['TO']), 0)
    
     result_df = df.groupby([team_id], as_index=False, sort=False).sum()
@@ -230,4 +235,33 @@ def get_lineup_stats(df, team_id, id_table=None):
     result_df['A/T_STR'] = result_df['A/T'].apply(lambda x: '**%.2f**' % x if x >= 1.5 else '%.2f' % x)
     result_df['NETRTG'] = result_df['OFFRTG'] - result_df['DEFRTG']
 
-    return result_df[[team_id, 'LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']]
+    return result_df[[team_id, 'LINEUP_NAME', 'SECS', 'TP', 'PACE', 'PM', 'EFG', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']]
+
+def get_on_off_stats(df, team_id, id_table=None):
+    update_rtg(df, team_id)
+    on_off_df = df.groupby(['PLAYER', 'ON'], as_index=False, sort=False).sum()
+    on_off_df['PLAYER_NAME'] = on_off_df['PLAYER'].apply(lambda x: id_table[x] if x in id_table else x)
+    
+    on_off_df['OFFRTG_OFF'] = on_off_df.apply(lambda x: 0 if x['ON'] else x['OFFRTG'], axis=1)
+    on_off_df['DEFRTG_OFF'] = on_off_df.apply(lambda x: 0 if x['ON'] else x['DEFRTG'], axis=1)
+    on_off_df['SECS_OFF'] = on_off_df.apply(lambda x: 0 if x['ON'] else x['SECS'], axis=1)
+    on_off_df['OFFRTG'] = on_off_df.apply(lambda x: x['OFFRTG'] if x['ON'] else 0, axis=1)
+    on_off_df['DEFRTG'] = on_off_df.apply(lambda x: x['DEFRTG'] if x['ON'] else 0,axis=1)
+    on_off_df['SECS'] = on_off_df.apply(lambda x: x['SECS'] if x['ON'] else 0,axis=1)
+
+    on_off_df['NETRTG'] = on_off_df['OFFRTG'] - on_off_df['DEFRTG']
+    on_off_df['NETRTG_OFF'] = on_off_df['OFFRTG_OFF'] - on_off_df['DEFRTG_OFF']
+
+    result_df = on_off_df.groupby(['PLAYER_NAME'], as_index=False, sort=False).sum()
+    result_df['OFFRTG_DIFF'] = result_df['OFFRTG'] - result_df['OFFRTG_OFF']
+    result_df['DEFRTG_DIFF'] = result_df['DEFRTG'] - result_df['DEFRTG_OFF']
+    result_df['NETRTG_DIFF'] = result_df['NETRTG'] - result_df['NETRTG_OFF']
+
+    result_df['OFFRTG_DIFF_STR'] = result_df['OFFRTG_DIFF'].apply(lambda x: '**%.1f**' % x if x>0 else '%.1f' % x)
+    result_df['DEFRTG_DIFF_STR'] = result_df['DEFRTG_DIFF'].apply(lambda x: '**%.1f**' % x if x<0 else '%.1f' % x)
+
+    result_df['TP'] = result_df['SECS'].apply(lambda x: base60_to(x))
+    result_df['TP_OFF'] = result_df['SECS_OFF'].apply(lambda x: base60_to(x))
+
+    return result_df[['PLAYER_NAME', 'SECS', 'SECS_OFF', 'TP', 'TP_OFF', 'OFFRTG', 'DEFRTG', 'NETRTG', 'OFFRTG_OFF', 'DEFRTG_OFF', 'NETRTG_OFF', 
+        'OFFRTG_DIFF', 'DEFRTG_DIFF', 'NETRTG_DIFF', 'OFFRTG_DIFF_STR', 'DEFRTG_DIFF_STR']]
