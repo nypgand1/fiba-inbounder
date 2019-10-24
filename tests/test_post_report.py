@@ -9,6 +9,14 @@ def test_gen_period_scores_md_v5():
     r = FibaPostGameReportV5(match_id='987140')
     assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|OT|Total|\n|:---:|---:|---:|---:|---:|---:|---:|\n|SGH|**22**|17|11|**24**|11|85|\n|FMD|14|17|**26**|17|12|86|\n'
 
+def test_gen_four_factors_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_four_factors_md() == '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |\n|:---:|---:|---:|---:|---:|---:|\n|SGH|77.5|47.4%|15.8%|20.0%|15.3%|\n|FMD|77.5|**55.2%**|21.0%|25.0%|14.0%|\n'
+
+def test_gen_key_stats_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_key_stats_md() == '| Team | FB | 2nd | Off TO | Paint | Bench |\n|:---:|---:|---:|---:|---:|---:|\n|SGH|10|12|21|22|17|\n|FMD|12|16|19|52|13|\n'
+
 def test_gen_period_scores_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
     assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|OT1|Total|\n|:---:|---:|---:|---:|---:|---:|---:|\n|LBN|**27**|19|**22**|19|19|106|\n|THA|**22**|**26**|14|**25**|13|100|\n'
