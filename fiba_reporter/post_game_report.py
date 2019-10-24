@@ -143,6 +143,10 @@ class FibaPostGameReport():
  
         return '\n'.join(result_str_list) + '\n'
 
+class FibaPostGameReportV5(FibaPostGameReport):
+    def __init__(self, match_id):
+        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_v5(match_id)
+
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
         self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_v7(event_id, game_unit)

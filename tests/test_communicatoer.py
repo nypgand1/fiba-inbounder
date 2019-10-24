@@ -1,7 +1,7 @@
 from fiba_inbounder.communicator import FibaCommunicator
 
-def test_get_game_v5():
-    result = FibaCommunicator.get_game_v5(match_id='1143749')
+def test_get_game_data_v5():
+    result = FibaCommunicator.get_game_data_v5(match_id='1143749')
     assert result['tm']['1']['name'] == 'Singapore Slingers'
 
 def test_get_game_team_stats_v7():

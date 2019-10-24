@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from fiba_inbounder.formulas import update_xy_v7, update_stats_v7, update_zone, update_range, update_lineup_v7
+from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, update_zone, update_range, update_lineup_v7
 from actions_sample import sample
 
 ac_df = pd.DataFrame([
@@ -40,8 +40,8 @@ def test_update_xy_v7():
     assert ac_dict[0]['X_SIDELINE_M'] == 7.5
     assert ac_dict[0]['Y_BASELINE_M'] == 1.575
 
-def test_update_stats_v7():
-    update_stats_v7(ac_df)
+def test_update_pbp_stats_v7():
+    update_pbp_stats_v7(ac_df)
     ac_dict = ac_df.to_dict(orient='records')
     assert ac_dict[15]['OR'] == 1
     assert ac_dict[16]['DR'] == 1

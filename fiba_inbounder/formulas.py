@@ -38,6 +38,60 @@ def score_bold_md(score):
         return '**{score}**'.format(score=score)
     return str(score)
 
+def update_team_stats_v5_to_v7(df):
+    df['AS'] = df['tot_sAssists']
+    df['BS'] = df['tot_sBlocks']
+    df['FGA'] = df['tot_sFieldGoalsAttempted']
+    df['FGM'] = df['tot_sFieldGoalsMade']
+    df['PF'] = df['tot_sFoulsTotal']
+    df['FTA'] = df['tot_sFreeThrowsAttempted']
+    df['FTM'] = df['tot_sFreeThrowsMade']
+    df['FTP'] = df['tot_sFreeThrowsPercentage']
+    df['TP'] = df['tot_sMinutes'].replace(np.nan, '00:00')
+    df['SECS'] = df['tot_sMinutes'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
+    df['PTS'] = df['tot_sPoints']
+    df['DR']  = df['tot_sReboundsDefensive']
+    df['OR'] = df['tot_sReboundsOffensive']
+    df['REB'] = df['tot_sReboundsTotal']
+    df['ST'] = df['tot_sSteals']
+    df['FG3A'] = df['tot_sThreePointersAttempted']
+    df['FG3M'] = df['tot_sThreePointersMade']
+    df['FG3P'] = df['tot_sThreePointersPercentage']
+    df['TO'] = df['tot_sTurnovers']
+    df['FG2A'] = df['tot_sTwoPointersAttempted']
+    df['FG2M'] = df['tot_sTwoPointersMade']
+    df['FG2P'] = df['tot_sTwoPointersPercentage']
+
+    df['A_FBP'] = df['tot_sPointsFastBreak']
+    df['A_SCP'] = df['tot_sPointsSecondChance']
+    df['A_PAT'] = df['tot_sPointsFromTurnovers']
+    df['A_PIP'] = df['tot_sPointsInThePaint']
+    df['A_PFB'] = df['tot_sBenchPoints']
+
+def update_player_stats_v5_to_v7(df):
+    df['AS'] = df['sAssists']
+    df['BS'] = df['sBlocks']
+    df['FGA'] = df['sFieldGoalsAttempted']
+    df['FGM'] = df['sFieldGoalsMade']
+    df['PF'] = df['sFoulsPersonal']
+    df['FTA'] = df['sFreeThrowsAttempted']
+    df['FTM'] = df['sFreeThrowsMade']
+    df['FTP'] = df['sFreeThrowsPercentage']
+    df['TP'] = df['sMinutes'].replace(np.nan, '00:00')
+    df['SECS'] = df['sMinutes'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
+    df['PTS'] = df['sPoints']
+    df['DR']  = df['sReboundsDefensive']
+    df['OR'] = df['sReboundsOffensive']
+    df['REB'] = df['sReboundsTotal']
+    df['ST'] = df['sSteals']
+    df['FG3A'] = df['sThreePointersAttempted']
+    df['FG3M'] = df['sThreePointersMade']
+    df['FG3P'] = df['sThreePointersPercentage']
+    df['TO'] = df['sTurnovers']
+    df['FG2A'] = df['sTwoPointersAttempted']
+    df['FG2M'] = df['sTwoPointersMade']
+    df['FG2P'] = df['sTwoPointersPercentage']
+
 def update_efg(df):
     df['EFG']= 100 * (((1.5*df['FG3M'] + df['FG2M']) / df['FGA']).replace(np.nan, 0))
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
@@ -86,7 +140,7 @@ def update_xy_v7(df):
     df['X_SIDELINE_M'] = df['SX'].apply(lambda x: float(x)/280*15)
     df['Y_BASELINE_M'] = df['SY'].apply(lambda y: float(y)/280*14)
 
-def update_stats_v7(df):
+def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
     df['FG2M'] = np.where((df['AC']=='P2') & (df['SU']=='+'), 1, 0)
     df['FG2A'] = np.where(df['AC']=='P2', 1, 0)

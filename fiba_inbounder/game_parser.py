@@ -1,9 +1,51 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from fiba_inbounder.communicator import FibaCommunicator
-from fiba_inbounder.formulas import game_time, update_secs_v7, update_xy_v7, update_stats_v7
+from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
+        update_secs_v7, update_xy_v7, update_pbp_stats_v7, \
+        update_team_stats_v5_to_v7, update_player_stats_v5_to_v7
 
 class FibaGameParser:
+    @staticmethod
+    def get_game_stats_dataframe_v5(match_id):
+        game_json = FibaCommunicator.get_game_data_v5(match_id)
+        team_stats_json = game_json['tm']
+
+        for t in team_stats_json.values():
+            #Team Stats
+            t['Name'] = t['nameInternational']
+            t['TeamCode'] = t['codeInternational']
+            t['Periods'] = [{'Id': period.replace('_score', '').replace('p', 'q').upper(), 'Score': score}
+                    for period, score in t.iteritems() if period.startswith('p') and period.endswith('_score')]
+            if 'ot_score' in t:
+                t['Periods'].append({'Id': 'OT', 'Score':t['ot_score']})
+            t['PeriodIdList'] = [p['Id'] for p in t['Periods']]
+
+            if base60_from(t['tot_sMinutes']) == 0:
+                team_secs = sum([base60_from(p['sMinutes']) for p in t['pl'].values()])
+                t['tot_sMinutes'] = base60_to(team_secs)
+
+            #Player Stats
+            for p in t['pl'].values():
+                p['TeamCode'] = t['codeInternational']
+
+        team_a_stats_json = team_stats_json['1']
+        team_b_stats_json = team_stats_json['2']
+       
+        team_a_player_stats_list = [p for p in team_stats_json['1']['pl'].values()]
+        team_b_player_stats_list = [p for p in team_stats_json['2']['pl'].values()]
+
+        #Oppenent DREB for calculating OREB%
+        team_a_stats_json['OPP_DR'] = team_b_stats_json['tot_sReboundsDefensive']
+        team_b_stats_json['OPP_DR'] = team_a_stats_json['tot_sReboundsDefensive']
+
+        team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
+        player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
+        update_team_stats_v5_to_v7(team_stats_df)
+        update_player_stats_v5_to_v7(player_stats_df)
+
+        return team_stats_df, player_stats_df
+
     @staticmethod
     def get_game_stats_dataframe_v7(event_id, game_unit):
         game_json = FibaCommunicator.get_game_team_stats_v7(event_id, game_unit)
@@ -16,6 +58,7 @@ class FibaGameParser:
             t['Stats']['Periods'] = t['Periods']
             t['Stats']['PeriodIdList'] = [p['Id'] for p in t['Periods']]
             t['Stats']['SECS'] = 60 * 5 * game_time(len(t['Periods']))
+            t['Stats']['TP'] = base60_to(t['Stats']['SECS'])
     
             #Player Stats
             for p in t['Children']:
@@ -48,7 +91,7 @@ class FibaGameParser:
 
         df = pd.DataFrame(sum(pbp_json_list, []))
         update_xy_v7(df)
-        update_stats_v7(df)
+        update_pbp_stats_v7(df)
         return df
 
     @staticmethod

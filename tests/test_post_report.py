@@ -1,5 +1,13 @@
 from fiba_inbounder.game_parser import FibaGameParser
-from fiba_reporter.post_game_report import FibaPostGameReportV7
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
+
+def test_gen_period_scores_md_v5(): 
+    r = FibaPostGameReportV5(match_id='1129356')
+    assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|Total|\n|:---:|---:|---:|---:|---:|---:|\n|MNV|**20**|**22**|13|15|70|\n|FMD|**24**|15|13|16|68|\n'
+    
+    #OT
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|OT|Total|\n|:---:|---:|---:|---:|---:|---:|---:|\n|SGH|**22**|17|11|**24**|11|85|\n|FMD|14|17|**26**|17|12|86|\n'
 
 def test_gen_period_scores_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
