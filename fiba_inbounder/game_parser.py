@@ -7,7 +7,7 @@ from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
 
 class FibaGameParser:
     @staticmethod
-    def get_game_stats_dataframe_v5(match_id):
+    def get_game_data_dataframe_v5(match_id):
         game_json = FibaCommunicator.get_game_data_v5(match_id)
         team_stats_json = game_json['tm']
 

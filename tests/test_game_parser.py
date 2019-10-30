@@ -1,7 +1,7 @@
 from fiba_inbounder.game_parser import FibaGameParser
 
 def test_get_game_stats_dataframe_v5():
-    team_stats_df, player_stats_df = FibaGameParser.get_game_stats_dataframe_v5(match_id='987140')
+    team_stats_df, player_stats_df = FibaGameParser.get_game_data_dataframe_v5(match_id='987140')
     
     stats_dict = team_stats_df.to_dict(orient='records')
     assert stats_dict[0]['Name'] == 'Saigon Heat'

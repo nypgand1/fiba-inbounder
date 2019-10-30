@@ -91,6 +91,10 @@ def update_player_stats_v5_to_v7(df):
     df['FG2A'] = df['sTwoPointersAttempted']
     df['FG2M'] = df['sTwoPointersMade']
     df['FG2P'] = df['sTwoPointersPercentage']
+    df['PM'] = df['sPlusMinusPoints']
+
+    df['JerseyNumber'] = df['shirtNumber']
+    df['Name'] = df['name'].str.replace(' ', '')
 
 def update_efg(df):
     df['EFG']= 100 * (((1.5*df['FG3M'] + df['FG2M']) / df['FGA']).replace(np.nan, 0))

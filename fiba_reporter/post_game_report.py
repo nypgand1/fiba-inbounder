@@ -97,7 +97,7 @@ class FibaPostGameReport():
         result_str_list = list()
         
         for t in self.player_stats_df['TeamCode'].unique():
-            ps_df = self.player_stats_df[self.player_stats_df['TeamCode'].str.match(t)]
+            ps_df = self.player_stats_df[self.player_stats_df['TeamCode'].str.match(t) & (self.player_stats_df['SECS'] > 0)]
             update_usg(ps_df)
             ps_df = ps_df.sort_values(['PM', 'SECS', 'EFG', 'USG'], ascending=[False, True, False, True])
             
@@ -145,7 +145,8 @@ class FibaPostGameReport():
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
-        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_v5(match_id)
+        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
+        self.id_table = dict()
 
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
