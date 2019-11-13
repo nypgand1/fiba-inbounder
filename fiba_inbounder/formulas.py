@@ -286,6 +286,7 @@ def get_lineup_stats(df, team_id, id_table=None):
             return '**%s**' % name_str
         else:    
             return name_str
+
     result_df['LINEUP_NAME'] = result_df.apply(lambda x: lineup_name(x[team_id], x['SECS'], x['OFFRTG'], x['DEFRTG'], x['PM']), axis=1)
 
     result_df['EFG_STR'] = result_df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)

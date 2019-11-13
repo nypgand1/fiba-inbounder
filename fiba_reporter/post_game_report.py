@@ -63,12 +63,11 @@ class FibaPostGameReport():
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_team_shot_range_md(self):
-        update_zone(self.pbp_df)
-        update_range(self.pbp_df)
+        update_zone(self.shot_df)
+        update_range(self.shot_df)
 
         result_str_list = list()
-        shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
-        team_shot_range_df = shot_df.sort_values(['ZONE']).groupby(['T1', 'RANGE'], as_index=False, sort=False).sum()
+        team_shot_range_df = self.shot_df.sort_values(['ZONE']).groupby(['T1', 'RANGE'], as_index=False, sort=False).sum()
         
         for t in team_shot_range_df['T1'].unique():
             tsr_df = team_shot_range_df[team_shot_range_df['T1'].str.match(t)]
@@ -145,7 +144,7 @@ class FibaPostGameReport():
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
-        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
+        self.team_stats_df, self.player_stats_df, self.starter_dict = FibaGameParser.get_game_data_dataframe_v5(match_id)
         self.id_table = dict()
 
 class FibaPostGameReportV7(FibaPostGameReport):
@@ -155,7 +154,9 @@ class FibaPostGameReportV7(FibaPostGameReport):
 
         stats_dict = self.team_stats_df.to_dict(orient='records')
         period_id_list = stats_dict[0]['PeriodIdList']
+        
         self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list)
+        self.shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
 
         if all([len(s)==5 for s in self.starter_dict.itervalues()]):
             update_lineup_v7(self.pbp_df, self.starter_dict)

@@ -28,6 +28,9 @@ class FibaGameParser:
             #Player Stats
             for p in t['pl'].values():
                 p['TeamCode'] = t['codeInternational']
+                p['JerseyNumber'] = p['shirtNumber']
+                p['Name']  = p['name'] .replace(' ', '')
+                p['NumName'] = '{num} {name}'.format(num=p['JerseyNumber'].zfill(2), name=p['Name'])
 
         team_a_stats_json = team_stats_json['1']
         team_b_stats_json = team_stats_json['2']
@@ -44,7 +47,10 @@ class FibaGameParser:
         update_team_stats_v5_to_v7(team_stats_df)
         update_player_stats_v5_to_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df
+        starter_dict = {t['TeamCode']: {p['NumName'] for p in t['pl'].values() if p['starter'] == 1} 
+                for t in team_stats_json.values()}
+
+        return team_stats_df, player_stats_df, starter_dict
 
     @staticmethod
     def get_game_stats_dataframe_v7(event_id, game_unit):

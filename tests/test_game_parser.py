@@ -1,7 +1,7 @@
 from fiba_inbounder.game_parser import FibaGameParser
 
 def test_get_game_stats_dataframe_v5():
-    team_stats_df, player_stats_df = FibaGameParser.get_game_data_dataframe_v5(match_id='987140')
+    team_stats_df, player_stats_df, starter_dict = FibaGameParser.get_game_data_dataframe_v5(match_id='987140')
     
     stats_dict = team_stats_df.to_dict(orient='records')
     assert stats_dict[0]['Name'] == 'Saigon Heat'
@@ -21,6 +21,10 @@ def test_get_game_stats_dataframe_v5():
     assert stats_dict[1]['A_PIP'] == 52
     assert stats_dict[1]['A_SCP'] == 16
     assert stats_dict[1]['PeriodIdList'] == ['Q1', 'Q2', 'Q3', 'Q4', 'OT']
+
+    assert starter_dict == {
+            'FMD': {'06 H.LEE','23 K.CHIEN','31 W.ARTINO','33 M.MILLER','40 T.GLASS'},
+            'SGH': {'01 T.HUGHES','11 T.DINH','12 J.YOUNG','13 M.BURNATOWSKI','33 K.BARONE'}}
 
 def test_get_game_stats_dataframe_v7():
     team_stats_df, player_stats_df = FibaGameParser.get_game_stats_dataframe_v7(event_id='208053', game_unit='24532-18-A')
