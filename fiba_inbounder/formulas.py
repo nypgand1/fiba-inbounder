@@ -232,7 +232,7 @@ def update_zone(df):
                                 np.where(df['X_SIDELINE_M']>9.95, 
                                     7, #Right Elbow Long 2PT
                                     6))))), #Center Long 2PT
-            np.nan))
+            None))
 
 def update_range(df):
     df['RANGE'] = np.where(df['ZONE']==0, 
@@ -243,7 +243,7 @@ def update_range(df):
                     'Long 2',
                     np.where(df['ZONE']<=13,
                         '3PT',
-                        np.nan))))
+                        None))))
 
 def update_range_stats(df):
     df['FGM/A'] = df.apply(lambda x: '{fgm}/{fga}'.format(fgm=x['FGM'], fga=x['FGA']), axis=1) 
