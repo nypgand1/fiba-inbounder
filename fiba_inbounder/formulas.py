@@ -166,6 +166,40 @@ def update_pbp_stats_v7(df):
     df['AS'] = np.where(df['AC']=='ASS', 1, 0)
     df['TO'] = np.where(df['AC']=='TO', 1, 0)
 
+def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
+    #TODO: Still Lots of Stats
+    df['T1'] = np.where(df['tno']==1, ta_code,
+            np.where(df['tno']==2, tb_code, None))
+    df['C1'] = df.apply(lambda x: '{num} {name}'.format(
+        num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '')), axis=1)
+    df['AC'] = np.where((df['actionType']=='period') & (df['subType']=='end'), 'ENDP',
+            np.where(df['actionType']=='substitution', 'SUBST', None))
+    df['SU'] = np.where(df['actionType']=='substitution',
+            np.where(df['subType']=='in', '+', 
+                np.where(df['subType']=='out', '-', None)),
+        None)
+    df['Time'] = df['gt']
+
+    df['FG2M'] = np.where((df['actionType']=='2pt') & (df['success']==1), 1, 0)
+    df['FG2A'] = np.where(df['actionType']=='2pt', 1, 0)
+    df['FG3M'] = np.where((df['actionType']=='3pt') & (df['success']==1), 1, 0)
+    df['FG3A'] = np.where(df['actionType']=='3pt', 1, 0)
+
+    df['FGA'] = df['FG2A'] + df['FG3A']
+    df['FGM'] = df['FG2M'] + df['FG3M']
+    df['FGPTS'] = 2 * df['FG2M'] + 3 *df['FG3M']
+   
+    df['FTM'] = np.where((df['actionType']=='freethrow') & (df['success']==1), 1, 0)
+    df['FTA'] = np.where(df['actionType']=='freethrow', 1, 0)
+    df['PTS'] = df['FGPTS'] + df['FTM']
+    
+    df['OR'] = np.where((df['actionType']=='rebound') & (df['subType']=='offensive'), 1, 0)
+    df['DR'] = np.where((df['actionType']=='rebound') & (df['subType']=='defensive'), 1, 0)
+    df['REB'] = df['OR'] + df['DR']
+
+    df['AS'] = np.where(df['actionType']=='assist', 1, 0)
+    df['TO'] = np.where(df['actionType']=='turnover', 1, 0)
+    
 def update_zone(df):
     RIM = np.array([(7.5, 1.575)])
     df['DISTANCE'] = np.linalg.norm(df[['X_SIDELINE_M', 'Y_BASELINE_M']].sub(RIM), axis=1)
@@ -219,7 +253,7 @@ def update_range_stats(df):
     df['FREQ_STR'] = df['FREQ'].apply(lambda x: '**%.1f%%**' % x if x >= 40 else '%.1f%%' % x)
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
 
-def update_lineup_v7(df, starter_dict):
+def update_lineup(df, starter_dict):
     pbp_dict = df.to_dict(orient='records')
 
     for i in range(len(pbp_dict)):

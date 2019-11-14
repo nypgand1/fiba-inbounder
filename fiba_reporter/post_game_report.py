@@ -3,7 +3,7 @@
 import pandas as pd
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_range, update_range_stats, update_lineup_v7, get_lineup_stats
+    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats
 
 class FibaPostGameReport():
     def _gen_period_scores_md(self):
@@ -119,6 +119,7 @@ class FibaPostGameReport():
     def _gen_lineup_stats_md(self):
         result_str_list = list()
 
+        print self.pbp_df['T1'].unique()
         for t in self.pbp_df['T1'].unique():
             if (not t) or pd.isna(t):
                 continue
@@ -144,8 +145,11 @@ class FibaPostGameReport():
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
-        self.team_stats_df, self.player_stats_df, self.starter_dict = FibaGameParser.get_game_data_dataframe_v5(match_id)
+        self.team_stats_df, self.player_stats_df, self.starter_dict, self.pbp_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
         self.id_table = dict()
+
+        if all([len(s)==5 for s in self.starter_dict.itervalues()]):
+            update_lineup(self.pbp_df, self.starter_dict)
 
 class FibaPostGameReportV7(FibaPostGameReport):
     def __init__(self, event_id, game_unit):
@@ -159,7 +163,7 @@ class FibaPostGameReportV7(FibaPostGameReport):
         self.shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
 
         if all([len(s)==5 for s in self.starter_dict.itervalues()]):
-            update_lineup_v7(self.pbp_df, self.starter_dict)
+            update_lineup(self.pbp_df, self.starter_dict)
 
 def main():
     event_id = raw_input('Event Id? ')

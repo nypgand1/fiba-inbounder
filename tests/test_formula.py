@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, update_zone, update_range, update_lineup_v7
+from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, update_zone, update_range, update_lineup
 from actions_sample import sample
 
 ac_df = pd.DataFrame([
@@ -107,8 +107,8 @@ def test_update_range():
     assert ac_dict[13]['RANGE'] == 'Long 2'
     assert ac_dict[14]['RANGE'] == 'Long 2'
 
-def test_update_lineup_v7():
-    update_lineup_v7(sample_df, starter_dict)
+def test_update_lineup():
+    update_lineup(sample_df, starter_dict)
     sample_dict = sample_df.to_dict(orient='records')
 
     assert set(sample_dict[0]['T_65245']) == {'P_205482', 'P_224350', 'P_206446', 'P_194018', 'P_199054'}

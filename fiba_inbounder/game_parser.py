@@ -2,7 +2,8 @@
 import pandas as pd
 from fiba_inbounder.communicator import FibaCommunicator
 from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
-        update_secs_v7, update_xy_v7, update_pbp_stats_v7, \
+        update_secs_v7, update_xy_v7, \
+        update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
         update_team_stats_v5_to_v7, update_player_stats_v5_to_v7
 
 class FibaGameParser:
@@ -50,7 +51,10 @@ class FibaGameParser:
         starter_dict = {t['TeamCode']: {p['NumName'] for p in t['pl'].values() if p['starter'] == 1} 
                 for t in team_stats_json.values()}
 
-        return team_stats_df, player_stats_df, starter_dict
+        pbp_df = pd.DataFrame(reversed(game_json['pbp']))
+        update_pbp_stats_v5_to_v7(pbp_df, team_a_stats_json['TeamCode'], team_b_stats_json['TeamCode'])
+
+        return team_stats_df, player_stats_df, starter_dict, pbp_df
 
     @staticmethod
     def get_game_stats_dataframe_v7(event_id, game_unit):
