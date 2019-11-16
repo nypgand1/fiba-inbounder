@@ -144,6 +144,11 @@ def update_xy_v7(df):
     df['X_SIDELINE_M'] = df['SX'].apply(lambda x: float(x)/280*15)
     df['Y_BASELINE_M'] = df['SY'].apply(lambda y: float(y)/280*14)
 
+def update_xy_v5(df):
+    #Left Corner as (0, 0) in Meters
+    df['X_SIDELINE_M'] = df['y'].apply(lambda y: float(y)/100*15)
+    df['Y_BASELINE_M'] = df['x'].apply(lambda x: float(x)/100*14 if x<=50 else float(x-50)/100*14)
+
 def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
     df['FG2M'] = np.where((df['AC']=='P2') & (df['SU']=='+'), 1, 0)
@@ -173,23 +178,36 @@ def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
     df['C1'] = df.apply(lambda x: '{num} {name}'.format(
         num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '')), axis=1)
     df['AC'] = np.where((df['actionType']=='period') & (df['subType']=='end'), 'ENDP',
-            np.where(df['actionType']=='substitution', 'SUBST', None))
+            np.where(df['actionType']=='substitution', 'SUBST', 
+            np.where(df['actionType']=='2pt', 'P2',
+            np.where(df['actionType']=='3pt', 'P3', None))))
     df['SU'] = np.where(df['actionType']=='substitution',
-            np.where(df['subType']=='in', '+', 
+                np.where(df['subType']=='in', '+', 
                 np.where(df['subType']=='out', '-', None)),
-        None)
-    df['Time'] = df['gt']
+            None)
+    if 'gt' in df:
+        df['Time'] = df['gt']
 
-    df['FG2M'] = np.where((df['actionType']=='2pt') & (df['success']==1), 1, 0)
+    if 'success' in df:
+        df['FG2M'] = np.where((df['actionType']=='2pt') & (df['success']==1), 1, 0)
+        df['FG3M'] = np.where((df['actionType']=='3pt') & (df['success']==1), 1, 0)
+    elif 'r' in df:
+        df['FG2M'] = np.where((df['actionType']=='2pt') & (df['r']==1), 1, 0)
+        df['FG3M'] = np.where((df['actionType']=='3pt') & (df['r']==1), 1, 0)
+    else:
+        df['FG2M'] = 0
+        df['FG3M'] = 0
     df['FG2A'] = np.where(df['actionType']=='2pt', 1, 0)
-    df['FG3M'] = np.where((df['actionType']=='3pt') & (df['success']==1), 1, 0)
     df['FG3A'] = np.where(df['actionType']=='3pt', 1, 0)
 
     df['FGA'] = df['FG2A'] + df['FG3A']
     df['FGM'] = df['FG2M'] + df['FG3M']
     df['FGPTS'] = 2 * df['FG2M'] + 3 *df['FG3M']
    
-    df['FTM'] = np.where((df['actionType']=='freethrow') & (df['success']==1), 1, 0)
+    if 'success' in df:
+        df['FTM'] = np.where((df['actionType']=='freethrow') & (df['success']==1), 1, 0)
+    else:
+        df['FTM'] = 0
     df['FTA'] = np.where(df['actionType']=='freethrow', 1, 0)
     df['PTS'] = df['FGPTS'] + df['FTM']
     

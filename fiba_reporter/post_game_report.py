@@ -65,7 +65,7 @@ class FibaPostGameReport():
     def _gen_team_shot_range_md(self):
         update_zone(self.shot_df)
         update_range(self.shot_df)
-
+        
         result_str_list = list()
         team_shot_range_df = self.shot_df.sort_values(['ZONE']).groupby(['T1', 'RANGE'], as_index=False, sort=False).sum()
         
@@ -86,7 +86,6 @@ class FibaPostGameReport():
                 float_format='%.1f',
                 encoding='utf-8',
                 index=False)[:-2])
-            result_str_list.append('|---|')
             result_str_list.append('|Total||{fgm}/{fga}||'.format(fgm=int(tsr_df['FGM'].sum()), fga=int(tsr_df['FGA'].sum())))
     
         return '\n'.join(result_str_list) + '\n'
@@ -119,7 +118,6 @@ class FibaPostGameReport():
     def _gen_lineup_stats_md(self):
         result_str_list = list()
 
-        print self.pbp_df['T1'].unique()
         for t in self.pbp_df['T1'].unique():
             if (not t) or pd.isna(t):
                 continue
@@ -145,7 +143,7 @@ class FibaPostGameReport():
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
-        self.team_stats_df, self.player_stats_df, self.starter_dict, self.pbp_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
+        self.team_stats_df, self.player_stats_df, self.starter_dict, self.pbp_df, self.shot_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
         self.id_table = dict()
 
         if all([len(s)==5 for s in self.starter_dict.itervalues()]):
@@ -166,14 +164,26 @@ class FibaPostGameReportV7(FibaPostGameReport):
             update_lineup(self.pbp_df, self.starter_dict)
 
 def main():
-    event_id = raw_input('Event Id? ')
-    game_unit = raw_input('Game Unit? ')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
 
-    r = FibaPostGameReportV7(str(event_id), str(game_unit))
-    print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
-        '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
-        '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
-        '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
+    if int(version) == 5:
+        match_id = raw_input('Match Id? ')
+        r = FibaPostGameReportV5(str(match_id))
+        
+        print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+            '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
+            '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
+            '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
+
+    elif int(version) == 7:
+        event_id = raw_input('Event Id? ')
+        game_unit = raw_input('Game Unit? ')
+        r = FibaPostGameReportV7(str(event_id), str(game_unit))
+        
+        print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+            '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
+            '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
+            '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
 
 if __name__ == '__main__':
     main()
