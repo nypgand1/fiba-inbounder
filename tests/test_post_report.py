@@ -1,5 +1,33 @@
 from fiba_inbounder.game_parser import FibaGameParser
-from fiba_reporter.post_game_report import FibaPostGameReportV7
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
+
+def test_gen_period_scores_md_v5(): 
+    r = FibaPostGameReportV5(match_id='1129356')
+    assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|Total|\n|:---:|---:|---:|---:|---:|---:|\n|MNV|**20**|**22**|13|15|70|\n|FMD|**24**|15|13|16|68|\n'
+    
+    #OT
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_period_scores_md() == '|Scores|Q1|Q2|Q3|Q4|OT|Total|\n|:---:|---:|---:|---:|---:|---:|---:|\n|SGH|**22**|17|11|**24**|11|85|\n|FMD|14|17|**26**|17|12|86|\n'
+
+def test_gen_four_factors_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_four_factors_md() == '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |\n|:---:|---:|---:|---:|---:|---:|\n|SGH|77.5|47.4%|15.8%|20.0%|15.3%|\n|FMD|77.5|**55.2%**|21.0%|25.0%|14.0%|\n'
+
+def test_gen_key_stats_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_key_stats_md() == '| Team | FB | 2nd | Off TO | Paint | Bench |\n|:---:|---:|---:|---:|---:|---:|\n|SGH|10|12|21|22|17|\n|FMD|12|16|19|52|13|\n'
+
+def test_gen_team_shot_range_md_v5():    
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|22.4%|5/17|29.4%|\n|Mid 2|19.7%|4/15|26.7%|\n|Long 2|7.9%|3/6|**50.0%**|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|17.9%|7/12|**58.3%**|\n|Mid 2|38.8%|18/26|**69.2%**|\n|Long 2|7.5%|3/5|**60.0%**|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
+
+def test_gen_player_stats_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_player_stats_md() == 'SGH\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|1|T.HUGHES|15:18|35.7%|**28.0%**|8|\n|22|C.CILIA|35:47|**112.5%**|5.1%|7|\n|12|J.YOUNG|38:00|**50.0%**|8.2%|2|\n|13|M.BURNATOWSKI|43:52|**53.2%**|**44.1%**|-3|\n|20|C.DIERKER|30:20|**57.1%**|13.5%|-5|\n|11|T.DINH|20:10|25.0%|16.0%|-6|\n|33|K.BARONE|41:33|28.1%|21.9%|-8|\nFMD\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|23|K.CHIEN|33:19|**61.1%**|15.7%|9|\n|40|T.GLASS|37:48|40.9%|23.5%|9|\n|33|M.MILLER|37:38|**53.8%**|20.4%|7|\n|6|H.LEE|22:23|**50.0%**|6.4%|5|\n|31|W.ARTINO|42:05|**87.5%**|24.7%|2|\n|9|S.CHEN|24:30|45.5%|**29.2%**|-6|\n|30|S.WU|11:40|0.0%|16.5%|-8|\n|1|L.TIEN|15:37|0.0%|14.6%|-13|\n'
+
+def test_gen_lineup_stats_md_v5():
+    r = FibaPostGameReportV5(match_id='987140')
+    assert r._gen_lineup_stats_md() == 'FMD\n| Lineups | Mins | Pace | +/- | eFG% | TO Ratio | A/T | OffRtg | DefRtg | NetRtg |\n|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n|01 L.TIEN, 06 H.LEE, 23 K.CHIEN, 33 M.MILLER, 40 T.GLASS|01:01|76.3|2|0.0%|**0.0%**|0.00|106.4|0.0|106.4|\n|**06 H.LEE, 23 K.CHIEN, 31 W.ARTINO, 33 M.MILLER, 40 T.GLASS**|15:26|74.1|15|**68.0%**|20.6%|1.33|134.1|85.5|48.6|\n|09 S.CHEN, 23 K.CHIEN, 31 W.ARTINO, 33 M.MILLER, 40 T.GLASS|08:44|89.2|7|**50.0%**|**10.2%**|1.00|96.7|62.1|34.6|\n|01 L.TIEN, 09 S.CHEN, 30 S.WU, 31 W.ARTINO, 40 T.GLASS|02:30|88.0|2|40.0%|33.3%|0.00|66.7|40.0|26.7|\n|01 L.TIEN, 06 H.LEE, 09 S.CHEN, 31 W.ARTINO, 33 M.MILLER|00:01|0.0|0|0.0%|**0.0%**|0.00|0.0|0.0|0.0|\n|01 L.TIEN, 09 S.CHEN, 30 S.WU, 31 W.ARTINO, 33 M.MILLER|03:46|79.0|-1|33.3%|**14.3%**|1.00|57.1|63.5|-6.3|\n|06 H.LEE, 09 S.CHEN, 23 K.CHIEN, 31 W.ARTINO, 40 T.GLASS|01:47|78.5|-2|**100.0%**|66.7%|0.00|66.7|100.0|-33.3|\n|01 L.TIEN, 09 S.CHEN, 30 S.WU, 33 M.MILLER, 40 T.GLASS|01:54|87.6|-3|33.3%|**0.0%**|0.00|87.2|123.0|-35.7|\n|01 L.TIEN, 06 H.LEE, 23 K.CHIEN, 31 W.ARTINO, 40 T.GLASS|02:53|77.7|-6|**75.0%**|20.5%|0.00|143.4|205.7|-62.3|\n|01 L.TIEN, 09 S.CHEN, 23 K.CHIEN, 31 W.ARTINO, 33 M.MILLER|02:11|71.1|-3|**50.0%**|**0.0%**|**inf**|79.8|150.0|-70.2|\n|09 S.CHEN, 30 S.WU, 31 W.ARTINO, 33 M.MILLER, 40 T.GLASS|03:19|65.6|-6|**75.0%**|60.0%|0.33|60.0|153.1|-93.1|\n|01 L.TIEN, 06 H.LEE, 23 K.CHIEN, 31 W.ARTINO, 33 M.MILLER|01:10|59.0|-4|0.0%|50.0%|0.00|0.0|277.8|-277.8|\nSGH\n| Lineups | Mins | Pace | +/- | eFG% | TO Ratio | A/T | OffRtg | DefRtg | NetRtg |\n|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n|**01 T.HUGHES, 12 J.YOUNG, 13 M.BURNATOWSKI, 22 C.CILIA, 33 K.BARONE**|04:37|72.1|9|**58.3%**|**11.6%**|**2.00**|138.9|37.5|101.4|\n|01 T.HUGHES, 12 J.YOUNG, 20 C.DIERKER, 22 C.CILIA, 33 K.BARONE|01:08|70.6|2|**50.0%**|**0.0%**|**inf**|100.0|0.0|100.0|\n|**11 T.DINH, 12 J.YOUNG, 13 M.BURNATOWSKI, 20 C.DIERKER, 22 C.CILIA**|03:27|77.9|7|**71.4%**|**0.0%**|**inf**|147.8|66.7|81.2|\n|01 T.HUGHES, 11 T.DINH, 12 J.YOUNG, 13 M.BURNATOWSKI, 33 K.BARONE|05:19|80.2|-1|**57.1%**|29.1%|0.33|96.9|100.0|-3.1|\n|01 T.HUGHES, 13 M.BURNATOWSKI, 20 C.DIERKER, 22 C.CILIA, 33 K.BARONE|04:10|80.4|-2|**90.0%**|25.4%|**1.50**|114.2|123.9|-9.7|\n|12 J.YOUNG, 13 M.BURNATOWSKI, 20 C.DIERKER, 22 C.CILIA, 33 K.BARONE|14:45|78.6|-4|48.1%|**14.0%**|1.25|104.7|116.0|-11.2|\n|11 T.DINH, 12 J.YOUNG, 13 M.BURNATOWSKI, 22 C.CILIA, 33 K.BARONE|04:40|91.7|-4|21.4%|36.8%|0.25|36.8|76.0|-39.3|\n|11 T.DINH, 13 M.BURNATOWSKI, 20 C.DIERKER, 22 C.CILIA, 33 K.BARONE|02:42|86.2|-1|28.6%|**0.0%**|0.00|57.1|107.8|-50.6|\n|11 T.DINH, 12 J.YOUNG, 13 M.BURNATOWSKI, 20 C.DIERKER, 33 K.BARONE|03:54|58.1|-7|18.8%|**0.0%**|0.00|50.0|188.0|-138.0|\n'
 
 def test_gen_period_scores_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
@@ -15,11 +43,11 @@ def test_gen_key_stats_md_v7():
 
 def test_gen_team_shot_range_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
-    assert r._gen_team_shot_range_md() == 'LBN\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|32.9%|17/26|**65.4%**|\n|Mid 2|15.2%|7/12|**58.3%**|\n|Long 2|10.1%|3/8|37.5%|\n|3PT|**41.8%**|14/33|**63.6%**|\n|---|\n|Total||41/79||\nTHA\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.7%**|24/48|**50.0%**|\n|Mid 2|9.9%|2/9|22.2%|\n|Long 2|4.4%|3/4|**75.0%**|\n|3PT|33.0%|7/30|35.0%|\n|---|\n|Total||36/91||\n'
+    assert r._gen_team_shot_range_md() == 'LBN\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|32.9%|17/26|**65.4%**|\n|Mid 2|15.2%|7/12|**58.3%**|\n|Long 2|10.1%|3/8|37.5%|\n|3PT|**41.8%**|14/33|**63.6%**|\n|Total||41/79||\nTHA\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.7%**|24/48|**50.0%**|\n|Mid 2|9.9%|2/9|22.2%|\n|Long 2|4.4%|3/4|**75.0%**|\n|3PT|33.0%|7/30|35.0%|\n|Total||36/91||\n'
 
 def test_gen_player_stats_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
-    assert r._gen_player_stats_md() == 'LBN\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|14|Ziade|29:56|33.3%|14.7%|23|\n|7|El Khatib|42:33|**50.0%**|15.5%|10|\n|5|Saoud|43:31|**65.8%**|23.8%|8|\n|3|Lyons|39:47|**83.3%**|20.8%|3|\n|33|Bawji|44:15|**61.1%**|**27.7%**|3|\n|4|Abd El Nour|00:00|0.0%|0.0%|0|\n|1|Abdel Moneim|00:00|0.0%|0.0%|0|\n|9|Kasab|00:00|0.0%|0.0%|0|\n|2|Kodsi|02:37|0.0%|16.8%|-2|\n|11|Akl|17:52|**75.0%**|7.4%|-7|\n|0|El Kaissi|04:25|33.3%|**29.8%**|-8|\nTHA\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|36|Sunthonsiri|14:51|0.0%|5.2%|10|\n|20|Suktub|09:09|**125.0%**|8.5%|4|\n|65|Chanthachon|31:25|**60.7%**|19.4%|4|\n|91|Klahan|15:40|**50.0%**|7.4%|1|\n|9|Apiromvilaichai|00:00|0.0%|0.0%|0|\n|38|Phuangla|00:00|0.0%|0.0%|0|\n|97|Towaroj|00:00|0.0%|0.0%|0|\n|14|Saengtong|06:39|0.0%|16.1%|0|\n|3|Keene|45:00|38.5%|**29.8%**|-6|\n|7|Singletary|43:42|**52.2%**|**26.5%**|-9|\n|77|Ananti|31:43|17.9%|21.0%|-16|\n|69|Apiromvilaichai|26:48|42.9%|13.0%|-18|\n'
+    assert r._gen_player_stats_md() == 'LBN\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|14|Ziade|29:56|33.3%|14.7%|23|\n|7|El Khatib|42:33|**50.0%**|15.5%|10|\n|5|Saoud|43:31|**65.8%**|23.8%|8|\n|3|Lyons|39:47|**83.3%**|20.8%|3|\n|33|Bawji|44:15|**61.1%**|**27.7%**|3|\n|2|Kodsi|02:37|0.0%|16.8%|-2|\n|11|Akl|17:52|**75.0%**|7.4%|-7|\n|0|El Kaissi|04:25|33.3%|**29.8%**|-8|\nTHA\n| # | Name | Mins | eFG% | USG% | +/- |\n|:---:|:---:|---:|---:|---:|---:|\n|36|Sunthonsiri|14:51|0.0%|5.2%|10|\n|20|Suktub|09:09|**125.0%**|8.5%|4|\n|65|Chanthachon|31:25|**60.7%**|19.4%|4|\n|91|Klahan|15:40|**50.0%**|7.4%|1|\n|14|Saengtong|06:39|0.0%|16.1%|0|\n|3|Keene|45:00|38.5%|**29.8%**|-6|\n|7|Singletary|43:42|**52.2%**|**26.5%**|-9|\n|77|Ananti|31:43|17.9%|21.0%|-16|\n|69|Apiromvilaichai|26:48|42.9%|13.0%|-18|\n'
 
 def test_gen_lineup_stats_md_v7():
     r = FibaPostGameReportV7(event_id='208153', game_unit='25098-A-3')

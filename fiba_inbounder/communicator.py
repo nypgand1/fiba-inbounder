@@ -12,7 +12,7 @@ class FibaCommunicator:
         return r
 
     @staticmethod
-    def get_game_v5(match_id):
+    def get_game_data_v5(match_id):
         url = FIBA_DATA_URL_V5.format(match_id=match_id)
         r = FibaCommunicator.get(url)
         return r.json()
