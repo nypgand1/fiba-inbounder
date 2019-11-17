@@ -30,7 +30,7 @@ class FibaGameParser:
             for p in t['pl'].values():
                 p['TeamCode'] = t['codeInternational']
                 p['JerseyNumber'] = p['shirtNumber']
-                p['Name']  = p['name'] .replace(' ', '')
+                p['Name']  = p['name'].replace(' ', '').upper()
                 p['NumName'] = '{num} {name}'.format(num=p['JerseyNumber'].zfill(2), name=p['Name'])
 
         team_a_stats_json = team_stats_json['1']
