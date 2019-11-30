@@ -169,21 +169,16 @@ def main():
     if int(version) == 5:
         match_id = raw_input('Match Id? ')
         r = FibaPostGameReportV5(str(match_id))
-        
-        print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
-            '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
-            '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
-            '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
 
     elif int(version) == 7:
         event_id = raw_input('Event Id? ')
         game_unit = raw_input('Game Unit? ')
         r = FibaPostGameReportV7(str(event_id), str(game_unit))
         
-        print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
-            '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
-            '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
-            '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
+    print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+        '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
+        '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
+        '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
 
 if __name__ == '__main__':
     main()

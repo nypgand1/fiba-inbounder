@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-from fiba_reporter.post_game_report import FibaPostGameReportV7
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
 from fiba_inbounder.formulas import get_lineup_stats, get_on_off_stats
 
 class FibaLineupReport():
@@ -73,24 +73,39 @@ class FibaLineupReport():
  
         return '\n'.join(result_str_list) + '\n'
 
+class FibaLineupReportV5(FibaLineupReport):
+    def __init__(self, game_id_list):
+        r_list = [FibaPostGameReportV5(match_id) for match_id in game_id_list]
+        self.pbp_df = pd.concat([r.pbp_df for r in r_list])
+        self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
 
 class FibaLineupReportV7(FibaLineupReport):
-    def __init__(self, event_game_list):
-        r_list = [FibaPostGameReportV7(event_id, game_unit) for (event_id, game_unit) in event_game_list]
+    def __init__(self, game_id_list):
+        r_list = [FibaPostGameReportV7(event_id, game_unit) for (event_id, game_unit) in game_id_list]
         self.pbp_df = pd.concat([r.pbp_df for r in r_list])
         self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
 
 def main():
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
     num_games = raw_input('How Many Games? ')
     secs_above = raw_input('How Many Secs above in Lineup Stats? ')
-    event_game_list = list()
-    for g in range(int(num_games)):
-        print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
-        event_id = raw_input('\tEvent Id? ')
-        game_unit = raw_input('\tGame Unit? ')
-        event_game_list.append((str(event_id), str(game_unit)))
+    game_id_list = list()
 
-    r = FibaLineupReportV7(event_game_list)
+    if int(version) == 5:
+        for g in range(int(num_games)):
+            print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
+            match_id = raw_input('\tMatch Id? ')
+            game_id_list.append(str(match_id))
+        r = FibaLineupReportV5(game_id_list)
+
+    elif int(version) == 7:
+        for g in range(int(num_games)):
+            print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
+            event_id = raw_input('\tEvent Id? ')
+            game_unit = raw_input('\tGame Unit? ')
+            game_id_list.append((str(event_id), str(game_unit)))
+        r = FibaLineupReportV7(game_id_list)
+
     print '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md(secs_above=int(secs_above)) + \
         '\n## On/Off Stats\n' + r._gen_on_off_stats_md()
 
