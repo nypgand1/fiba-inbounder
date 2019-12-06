@@ -289,7 +289,10 @@ def update_lineup(df, starter_dict):
             if pbp_dict[i-1]['SU'] == '+':
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
             elif pbp_dict[i-1]['SU'] == '-':
-                pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
+                if pbp_dict[i-1]['C1'] in pbp_dict[i][t]:
+                    pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
+                else:
+                    print pbp_dict[i-1]
             elif 'C2' in pbp_dict[i-1]:
                 print '%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time'])
                 print pbp_dict[i][t]

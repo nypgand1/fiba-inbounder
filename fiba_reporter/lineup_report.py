@@ -87,8 +87,8 @@ class FibaLineupReportV7(FibaLineupReport):
 
 def main():
     version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
-    num_games = raw_input('How Many Games? ')
     secs_above = raw_input('How Many Secs above in Lineup Stats? ')
+    num_games = raw_input('How Many Games? ')
     game_id_list = list()
 
     if int(version) == 5:
