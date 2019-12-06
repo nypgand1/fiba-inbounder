@@ -131,6 +131,12 @@ def update_four_factors(df):
     df['OR_PCT_STR'] = df['OR_PCT'].apply(lambda x: '**%.1f%%**' % x if x >= 30 else '%.1f%%' % x)
     df['FT_RATE_STR'] = df['FT_RATE'].apply(lambda x: '**%.1f%%**' % x if x >= 20 else '%.1f%%' % x)
 
+    for col in ['PACE', 'EFG', 'TO_RATIO', 'OR_PCT', 'FT_RATE']:
+        if col == 'TO_RATIO':
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
 def update_rtg(df, team_id):
     update_poss(df)
     df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)

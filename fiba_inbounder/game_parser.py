@@ -43,6 +43,9 @@ class FibaGameParser:
         team_a_stats_json['OPP_DR'] = team_b_stats_json['tot_sReboundsDefensive']
         team_b_stats_json['OPP_DR'] = team_a_stats_json['tot_sReboundsDefensive']
 
+        team_a_stats_json['OppTeamCode'] = team_b_stats_json['TeamCode']
+        team_b_stats_json['OppTeamCode'] = team_a_stats_json['TeamCode']
+
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
         player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
         update_team_stats_v5_to_v7(team_stats_df)
@@ -91,6 +94,9 @@ class FibaGameParser:
         team_a_stats_json['OPP_DR'] = team_b_stats_json['DR']
         team_b_stats_json['OPP_DR'] = team_a_stats_json['DR']
 
+        team_a_stats_json['OppTeamCode'] = team_b_stats_json['TeamCode']
+        team_b_stats_json['OppTeamCode'] = team_a_stats_json['TeamCode']
+        
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
         player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
         update_secs_v7(player_stats_df)
