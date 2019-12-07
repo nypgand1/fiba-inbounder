@@ -86,14 +86,40 @@ class FibaPreGameReport():
             float_format='%d',
             encoding='utf-8',
             index=False)[:-2]
- 
-        opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
-        update_team_avg_str(opp_team_avg_stats_df)
-
 
         result_str_list = [header_str_list, align_str_list, table_str, '',
                 opp_header_str_list, opp_align_str_list, opp_table_str, '',
                 rank_header_str_list, rank_align_str_list, rank_table_str]
+        return '\n'.join(result_str_list) + '\n'
+
+    def _gen_h2h_md(self):
+        h2h_avg_stats_df = self.team_stats_df.groupby(['TeamCode', 'OppTeamCode'], as_index=False, sort=False).mean()
+        update_four_factors(h2h_avg_stats_df)
+        update_team_avg_str(h2h_avg_stats_df)
+
+        adv_header_str_list = '| Team | Opp Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
+        adv_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|'
+        adv_table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        header_str_list = '| Team | Opp Team | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
+        align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
+        table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'FG2MA_STR', 'FG2P_STR', 'FG3MA_STR', 'FG3P_STR', 'FTMA_STR', 'FTP_STR', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        result_str_list = [adv_header_str_list, adv_align_str_list, adv_table_str, '',
+                header_str_list, align_str_list, table_str]
         return '\n'.join(result_str_list) + '\n'
 
 class FibaPreGameReportV5(FibaPreGameReport):
@@ -115,7 +141,8 @@ def main():
             game_id_list.append(str(match_id))
         r = FibaPreGameReportV5(game_id_list)
 
-    print '## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md()
+    print '## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
+            '\n## H2H Stats\n' + r._gen_h2h_md()
 
 if __name__ == '__main__':
     main()
