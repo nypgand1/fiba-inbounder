@@ -96,6 +96,21 @@ def update_player_stats_v5_to_v7(df):
     df['JerseyNumber'] = df['shirtNumber']
     df['Name'] = df['name'].str.replace(' ', '').str.upper()
 
+def update_team_avg_str(df):
+    for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS']:
+        if col in ['TO', 'PF']:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
+    for col in ['FG2', 'FG3', 'FT']:
+        df['{col}P_STR'.format(col=col)] = df['{col}P'.format(col=col)].apply(lambda x: '%.1f%%' % x)
+        df['{col}MA_STR'.format(col=col)] = df.apply(lambda x: '%.1f/%.1f' % (
+            x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)
+        df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
+            x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
+
 def update_efg(df):
     df['EFG']= 100 * (((1.5*df['FG3M'] + df['FG2M']) / df['FGA']).replace(np.nan, 0))
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
