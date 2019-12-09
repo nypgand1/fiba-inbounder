@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, update_zone, update_range, update_lineup
+from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, \
+        update_xy_v5, update_pbp_stats_v5_to_v7, \
+        update_zone, update_range, update_lineup
 from actions_sample import sample
 
 ac_df = pd.DataFrame([
@@ -33,6 +35,23 @@ starter_dict = {
     'T_65245': {'P_205482', 'P_224350', 'P_206446', 'P_194018', 'P_199054'},
     'T_57840': {'P_272277', 'P_185988', 'P_188667', 'P_258737', 'P_205412'}
 }
+
+shot_df = pd.DataFrame([
+    {'actionNumber': 500, 'actionType': '2pt', 'p': 12, 'per': 3, 'perType': 'REGULAR', 'player': 'Y. CHEN', 'pno': 12, 
+        'previousAction': '', 'r': 0, 'shirtNumber': '8', 'subType': 'jumpshot', 'tno': 1, 'x': 20.120000839233, 'y': 72.900001525879},
+    {'actionNumber': 20, 'actionType': "2pt", 'p': 4, 'per': 1, 'perType': "REGULAR", 'player': "M. KEENE", 'pno': 4, 
+        'previousAction': "", 'r': 1, 'shirtNumber': "0", 'subType': "fadeaway", 'tno': 1, 'x': 83, 'y': 79.110000610352}
+    ])
+
+def test_update_shot_v5():
+    update_pbp_stats_v5_to_v7(shot_df, 'FMD', 'FUB')
+    update_xy_v5(shot_df)
+    update_zone(shot_df)
+    update_range(shot_df)
+
+    shot_dict = shot_df.to_dict(orient='records')
+    assert shot_dict[0]['ZONE'] == 3
+    assert shot_dict[1]['ZONE'] == 1
 
 def test_update_xy_v7():
     update_xy_v7(ac_df)

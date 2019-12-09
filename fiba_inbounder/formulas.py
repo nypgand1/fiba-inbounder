@@ -167,8 +167,8 @@ def update_xy_v7(df):
 
 def update_xy_v5(df):
     #Left Corner as (0, 0) in Meters
-    df['X_SIDELINE_M'] = df['y'].apply(lambda y: float(y)/100*15)
-    df['Y_BASELINE_M'] = df['x'].apply(lambda x: float(x)/100*14 if x<=50 else float(x-50)/100*14)
+    df['X_SIDELINE_M'] = df.apply(lambda s: float(s['y'])/100*15 if s['x']<=50 else float(100-s['y'])/100*15, axis=1)
+    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/100*14 if s['x']<=50 else float(100-s['x'])/100*14, axis=1)
 
 def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
