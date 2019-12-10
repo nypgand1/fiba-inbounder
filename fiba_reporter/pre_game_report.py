@@ -122,6 +122,61 @@ class FibaPreGameReport():
                 header_str_list, align_str_list, table_str]
         return '\n'.join(result_str_list) + '\n'
 
+    def _gen_key_stats_md(self):
+        team_avg_stats_df = self.team_stats_df.groupby(['TeamCode'], as_index=False, sort=False).mean()
+        update_team_avg_str(team_avg_stats_df)
+        
+        header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
+        align_str_list = '|:---:|---:|---:|---:|---:|---:|'
+        table_str = '|' + team_avg_stats_df[['TeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
+        
+        opp_header_str_list = '| Opp Team | FB | 2nd | Off TO | Paint | Bench |'
+        opp_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|'
+        opp_table_str = '|' + opp_team_avg_stats_df[['OppTeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        rank_header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
+        rank_align_str_list = '|:---:|---:|---:|---:|---:|---:|'
+        rank_table_str = '|' + team_avg_stats_df[['TeamCode', 'A_FBP_RANK', 'A_SCP_RANK', 'A_PAT_RANK', 'A_PIP_RANK', 'A_PFB_RANK']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%d',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        h2h_avg_stats_df = self.team_stats_df.groupby(['TeamCode', 'OppTeamCode'], as_index=False, sort=False).mean()
+        update_team_avg_str(h2h_avg_stats_df)
+
+        h2h_header_str_list = '| Team | Opp Team | FB | 2nd | Off TO | Paint | Bench |'
+        h2h_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|'
+        h2h_table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
+            sep='|',
+            line_terminator='|\n|',
+            header=False,
+            float_format='%.1f',
+            encoding='utf-8',
+            index=False)[:-2]
+ 
+        result_str_list = [header_str_list, align_str_list, table_str, '',
+                opp_header_str_list, opp_align_str_list, opp_table_str, '',
+                rank_header_str_list, rank_align_str_list, rank_table_str, '',
+                h2h_header_str_list, h2h_align_str_list, h2h_table_str]
+        return '\n'.join(result_str_list) + '\n'
+
 class FibaPreGameReportV5(FibaPreGameReport):
     def __init__(self, game_id_list):
         r_list = [FibaPostGameReportV5(match_id) for match_id in game_id_list]
@@ -142,7 +197,7 @@ def main():
         r = FibaPreGameReportV5(game_id_list)
 
     print '## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
-            '\n## H2H Stats\n' + r._gen_h2h_md()
+            '\n## H2H Stats\n' + r._gen_h2h_md() + '\n## Key Stats\n' + r._gen_key_stats_md()
 
 if __name__ == '__main__':
     main()

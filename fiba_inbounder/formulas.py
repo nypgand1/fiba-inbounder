@@ -98,7 +98,8 @@ def update_player_stats_v5_to_v7(df):
 
 def update_team_avg_str(df):
     for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
-            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS']:
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS', 
+            'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']:
         if col in ['TO', 'PF']:
             df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
         else:
