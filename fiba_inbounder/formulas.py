@@ -46,7 +46,6 @@ def update_team_stats_v5_to_v7(df):
     df['PF'] = df['tot_sFoulsTotal']
     df['FTA'] = df['tot_sFreeThrowsAttempted']
     df['FTM'] = df['tot_sFreeThrowsMade']
-    df['FTP'] = df['tot_sFreeThrowsPercentage']
     df['TP'] = df['tot_sMinutes'].replace(np.nan, '00:00')
     df['SECS'] = df['tot_sMinutes'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
     df['PTS'] = df['tot_sPoints']
@@ -56,11 +55,9 @@ def update_team_stats_v5_to_v7(df):
     df['ST'] = df['tot_sSteals']
     df['FG3A'] = df['tot_sThreePointersAttempted']
     df['FG3M'] = df['tot_sThreePointersMade']
-    df['FG3P'] = df['tot_sThreePointersPercentage']
     df['TO'] = df['tot_sTurnovers']
     df['FG2A'] = df['tot_sTwoPointersAttempted']
     df['FG2M'] = df['tot_sTwoPointersMade']
-    df['FG2P'] = df['tot_sTwoPointersPercentage']
 
     df['A_FBP'] = df['tot_sPointsFastBreak']
     df['A_SCP'] = df['tot_sPointsSecondChance']
@@ -86,26 +83,53 @@ def update_player_stats_v5_to_v7(df):
     df['ST'] = df['sSteals']
     df['FG3A'] = df['sThreePointersAttempted']
     df['FG3M'] = df['sThreePointersMade']
-    df['FG3P'] = df['sThreePointersPercentage']
     df['TO'] = df['sTurnovers']
     df['FG2A'] = df['sTwoPointersAttempted']
     df['FG2M'] = df['sTwoPointersMade']
-    df['FG2P'] = df['sTwoPointersPercentage']
     df['PM'] = df['sPlusMinusPoints']
 
     df['JerseyNumber'] = df['shirtNumber']
     df['Name'] = df['name'].str.replace(' ', '').str.upper()
 
-def update_team_avg_str(df):
+def update_team_avg(df):
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P'.format(col=col)] = df.apply(lambda x: 
+                (100*float(x['{col}M'.format(col=col)]) / x['{col}A'.format(col=col)]) if x['{col}A'.format(col=col)] > 0
+                else 0.0, axis=1)
+    
     for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
-            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
+            'FGM', 'FGA', 'FGP',
             'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']:
         if col in ['TO', 'PF']:
             df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
         else:
             df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
 
-    for col in ['FG2', 'FG3', 'FT']:
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P_STR'.format(col=col)] = df['{col}P'.format(col=col)].apply(lambda x: '%.1f%%' % x)
+        df['{col}MA_STR'.format(col=col)] = df.apply(lambda x: '%.1f/%.1f' % (
+            x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)
+        df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
+            x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
+
+def update_player_avg(df):
+    df['TP'] = df['SECS'].apply(lambda x: base60_to(x))
+    
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P'.format(col=col)] = df.apply(lambda x: 
+                (100*float(x['{col}M'.format(col=col)]) / x['{col}A'.format(col=col)]) if x['{col}A'.format(col=col)] > 0
+                else 0.0, axis=1)
+    
+    for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
+            'FGM', 'FGA', 'FGP']:
+        if col in ['TO', 'PF']:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
         df['{col}P_STR'.format(col=col)] = df['{col}P'.format(col=col)].apply(lambda x: '%.1f%%' % x)
         df['{col}MA_STR'.format(col=col)] = df.apply(lambda x: '%.1f/%.1f' % (
             x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)

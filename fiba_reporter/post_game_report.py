@@ -91,11 +91,11 @@ class FibaPostGameReport():
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_player_stats_md(self):
-        update_efg(self.player_stats_df)
         result_str_list = list()
         
         for t in self.player_stats_df['TeamCode'].unique():
             ps_df = self.player_stats_df[self.player_stats_df['TeamCode'].str.match(t) & (self.player_stats_df['SECS'] > 0)]
+            update_efg(ps_df)
             update_usg(ps_df)
             ps_df = ps_df.sort_values(['PM', 'SECS', 'EFG', 'USG'], ascending=[False, True, False, True])
             
