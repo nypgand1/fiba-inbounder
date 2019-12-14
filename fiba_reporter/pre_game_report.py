@@ -212,7 +212,7 @@ class FibaPreGameReport():
                 encoding='utf-8',
                 index=False)[:-2]
  
-            ps_df = ps_df.sort_values(['OR', 'REB'], ascending=[False, False])
+            ps_df = ps_df.sort_values(['REB', 'OR'], ascending=[False, False])
             reb_header_str_list = '| # | Name | GP | Mins | OREB | REB |'
             reb_align_str_list = '|:---:|:---:|---:|---:|---:|---:|'
             reb_table_str = '|' + ps_df[['JerseyNumber', 'Name', 'GP', 'TP', 'OR', 'REB']].to_csv(
