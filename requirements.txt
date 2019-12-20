@@ -2,3 +2,6 @@ pytest==4.6.4
 requests==2.22.0
 numpy==1.16.4
 pandas==0.24.2
+simplejson==3.16.0
+svgwrite==1.1.12
+CairoSVG==1.0.22

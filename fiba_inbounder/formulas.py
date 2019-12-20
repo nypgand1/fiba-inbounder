@@ -193,7 +193,7 @@ def update_xy_v7(df):
 def update_xy_v5(df):
     #Left Corner as (0, 0) in Meters
     df['X_SIDELINE_M'] = df.apply(lambda s: float(s['y'])/100*15 if s['x']<=50 else float(100-s['y'])/100*15, axis=1)
-    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/100*14 if s['x']<=50 else float(100-s['x'])/100*14, axis=1)
+    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/50*14 if s['x']<=50 else float(100-s['x'])/50*14, axis=1)
 
 def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
@@ -281,9 +281,9 @@ def update_zone(df):
                         12, #Right Wing 3PT
                         11),)), #Center 3PT
             np.where(df['AC'] == 'P2',
-                np.where(df['DISTANCE']<=2.0, #2PT
+                np.where(df['DISTANCE']<=2.25, #2PT
                     0, #Rim 2PT
-                    np.where(df['DISTANCE']<=4.0,
+                    np.where(df['DISTANCE']<=4.5,
                         np.where(df['X_SIDELINE_M']<5.05, #Mid 2PT
                             1, #Left Mid 2PT
                             np.where(df['X_SIDELINE_M']>9.95,
