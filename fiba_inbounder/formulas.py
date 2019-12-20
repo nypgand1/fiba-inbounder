@@ -221,6 +221,8 @@ def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
     #TODO: Still Lots of Stats
     df['T1'] = np.where(df['tno']==1, ta_code,
             np.where(df['tno']==2, tb_code, None))
+    df['OppTeamCode'] = np.where(df['tno']==1, tb_code,
+            np.where(df['tno']==2, ta_code, None))
     df['C1'] = df.apply(lambda x: '{num} {name}'.format(
         num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '').upper()), axis=1)
     df['AC'] = np.where((df['actionType']=='period') & (df['subType']=='end'), 'ENDP',
@@ -279,9 +281,9 @@ def update_zone(df):
                         12, #Right Wing 3PT
                         11),)), #Center 3PT
             np.where(df['AC'] == 'P2',
-                np.where(df['DISTANCE']<=2.25, #2PT
+                np.where(df['DISTANCE']<=2.0, #2PT
                     0, #Rim 2PT
-                    np.where(df['DISTANCE']<=4.5,
+                    np.where(df['DISTANCE']<=4.0,
                         np.where(df['X_SIDELINE_M']<5.05, #Mid 2PT
                             1, #Left Mid 2PT
                             np.where(df['X_SIDELINE_M']>9.95,

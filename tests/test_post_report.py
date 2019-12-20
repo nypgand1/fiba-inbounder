@@ -19,7 +19,7 @@ def test_gen_key_stats_md_v5():
 
 def test_gen_team_shot_range_md_v5():    
     r = FibaPostGameReportV5(match_id='987140')
-    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|38.2%|11/29|37.9%|\n|Mid 2|7.9%|1/6|16.7%|\n|Long 2|3.9%|0/3|0.0%|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.2%**|26/35|**74.3%**|\n|Mid 2|11.9%|2/8|25.0%|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
+    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|38.2%|11/29|37.9%|\n|Mid 2|6.6%|1/5|20.0%|\n|Long 2|5.3%|0/4|0.0%|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**50.7%**|26/34|**76.5%**|\n|Mid 2|11.9%|2/8|25.0%|\n|Long 2|1.5%|0/1|0.0%|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
 
 def test_gen_player_stats_md_v5():
     r = FibaPostGameReportV5(match_id='987140')
@@ -43,7 +43,7 @@ def test_gen_key_stats_md_v7():
 
 def test_gen_team_shot_range_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')
-    assert r._gen_team_shot_range_md() == 'LBN\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|32.9%|17/26|**65.4%**|\n|Mid 2|15.2%|7/12|**58.3%**|\n|Long 2|10.1%|3/8|37.5%|\n|3PT|**41.8%**|14/33|**63.6%**|\n|Total||41/79||\nTHA\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.7%**|24/48|**50.0%**|\n|Mid 2|9.9%|2/9|22.2%|\n|Long 2|4.4%|3/4|**75.0%**|\n|3PT|33.0%|7/30|35.0%|\n|Total||36/91||\n'
+    assert r._gen_team_shot_range_md() == 'LBN\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|30.4%|15/24|**62.5%**|\n|Mid 2|13.9%|7/11|**63.6%**|\n|Long 2|13.9%|5/11|45.5%|\n|3PT|**41.8%**|14/33|**63.6%**|\n|Total||41/79||\nTHA\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**49.5%**|23/45|**51.1%**|\n|Mid 2|9.9%|2/9|22.2%|\n|Long 2|7.7%|4/7|**57.1%**|\n|3PT|33.0%|7/30|35.0%|\n|Total||36/91||\n'
 
 def test_gen_player_stats_md_v7():
     r = FibaPostGameReportV7(event_id='208053', game_unit='24527-B-1')

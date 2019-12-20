@@ -248,7 +248,6 @@ class FibaPreGameReportV5(FibaPreGameReport):
         r_list = [FibaPostGameReportV5(match_id) for match_id in game_id_list]
         self.team_stats_df = pd.concat([r.team_stats_df for r in r_list], sort=False)
         self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
-        self.shot_df = pd.concat([r.shot_df for r in r_list], sort=False)
 
 def main():
     version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')

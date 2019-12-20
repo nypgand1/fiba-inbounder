@@ -51,7 +51,7 @@ def test_update_shot_v5():
 
     shot_dict = shot_df.to_dict(orient='records')
     assert shot_dict[0]['ZONE'] == 3
-    assert shot_dict[1]['ZONE'] == 1
+    assert shot_dict[1]['ZONE'] == 4
 
 def test_update_xy_v7():
     update_xy_v7(ac_df)
