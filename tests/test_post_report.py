@@ -19,7 +19,7 @@ def test_gen_key_stats_md_v5():
 
 def test_gen_team_shot_range_md_v5():    
     r = FibaPostGameReportV5(match_id='987140')
-    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|22.4%|5/17|29.4%|\n|Mid 2|19.7%|4/15|26.7%|\n|Long 2|7.9%|3/6|**50.0%**|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|17.9%|7/12|**58.3%**|\n|Mid 2|38.8%|18/26|**69.2%**|\n|Long 2|7.5%|3/5|**60.0%**|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
+    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|38.2%|11/29|37.9%|\n|Mid 2|7.9%|1/6|16.7%|\n|Long 2|3.9%|0/3|0.0%|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.2%**|26/35|**74.3%**|\n|Mid 2|11.9%|2/8|25.0%|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
 
 def test_gen_player_stats_md_v5():
     r = FibaPostGameReportV5(match_id='987140')

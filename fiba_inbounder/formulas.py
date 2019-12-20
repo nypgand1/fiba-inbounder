@@ -46,7 +46,6 @@ def update_team_stats_v5_to_v7(df):
     df['PF'] = df['tot_sFoulsTotal']
     df['FTA'] = df['tot_sFreeThrowsAttempted']
     df['FTM'] = df['tot_sFreeThrowsMade']
-    df['FTP'] = df['tot_sFreeThrowsPercentage']
     df['TP'] = df['tot_sMinutes'].replace(np.nan, '00:00')
     df['SECS'] = df['tot_sMinutes'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
     df['PTS'] = df['tot_sPoints']
@@ -56,11 +55,9 @@ def update_team_stats_v5_to_v7(df):
     df['ST'] = df['tot_sSteals']
     df['FG3A'] = df['tot_sThreePointersAttempted']
     df['FG3M'] = df['tot_sThreePointersMade']
-    df['FG3P'] = df['tot_sThreePointersPercentage']
     df['TO'] = df['tot_sTurnovers']
     df['FG2A'] = df['tot_sTwoPointersAttempted']
     df['FG2M'] = df['tot_sTwoPointersMade']
-    df['FG2P'] = df['tot_sTwoPointersPercentage']
 
     df['A_FBP'] = df['tot_sPointsFastBreak']
     df['A_SCP'] = df['tot_sPointsSecondChance']
@@ -86,15 +83,58 @@ def update_player_stats_v5_to_v7(df):
     df['ST'] = df['sSteals']
     df['FG3A'] = df['sThreePointersAttempted']
     df['FG3M'] = df['sThreePointersMade']
-    df['FG3P'] = df['sThreePointersPercentage']
     df['TO'] = df['sTurnovers']
     df['FG2A'] = df['sTwoPointersAttempted']
     df['FG2M'] = df['sTwoPointersMade']
-    df['FG2P'] = df['sTwoPointersPercentage']
     df['PM'] = df['sPlusMinusPoints']
 
     df['JerseyNumber'] = df['shirtNumber']
     df['Name'] = df['name'].str.replace(' ', '').str.upper()
+
+def update_team_avg(df):
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P'.format(col=col)] = df.apply(lambda x: 
+                (100*float(x['{col}M'.format(col=col)]) / x['{col}A'.format(col=col)]) if x['{col}A'.format(col=col)] > 0
+                else 0.0, axis=1)
+    
+    for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
+            'FGM', 'FGA', 'FGP',
+            'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']:
+        if col in ['TO', 'PF']:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P_STR'.format(col=col)] = df['{col}P'.format(col=col)].apply(lambda x: '%.1f%%' % x)
+        df['{col}MA_STR'.format(col=col)] = df.apply(lambda x: '%.1f/%.1f' % (
+            x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)
+        df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
+            x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
+
+def update_player_avg(df):
+    df['TP'] = df['SECS'].apply(lambda x: base60_to(x))
+    
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P'.format(col=col)] = df.apply(lambda x: 
+                (100*float(x['{col}M'.format(col=col)]) / x['{col}A'.format(col=col)]) if x['{col}A'.format(col=col)] > 0
+                else 0.0, axis=1)
+    
+    for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
+            'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
+            'FGM', 'FGA', 'FGP']:
+        if col in ['TO', 'PF']:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
+    for col in ['FG2', 'FG3', 'FT', 'FG']:
+        df['{col}P_STR'.format(col=col)] = df['{col}P'.format(col=col)].apply(lambda x: '%.1f%%' % x)
+        df['{col}MA_STR'.format(col=col)] = df.apply(lambda x: '%.1f/%.1f' % (
+            x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)
+        df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
+            x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
 
 def update_efg(df):
     df['EFG']= 100 * (((1.5*df['FG3M'] + df['FG2M']) / df['FGA']).replace(np.nan, 0))
@@ -131,6 +171,12 @@ def update_four_factors(df):
     df['OR_PCT_STR'] = df['OR_PCT'].apply(lambda x: '**%.1f%%**' % x if x >= 30 else '%.1f%%' % x)
     df['FT_RATE_STR'] = df['FT_RATE'].apply(lambda x: '**%.1f%%**' % x if x >= 20 else '%.1f%%' % x)
 
+    for col in ['PACE', 'EFG', 'TO_RATIO', 'OR_PCT', 'FT_RATE']:
+        if col == 'TO_RATIO':
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
+        else:
+            df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
+
 def update_rtg(df, team_id):
     update_poss(df)
     df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
@@ -146,8 +192,8 @@ def update_xy_v7(df):
 
 def update_xy_v5(df):
     #Left Corner as (0, 0) in Meters
-    df['X_SIDELINE_M'] = df['y'].apply(lambda y: float(y)/100*15)
-    df['Y_BASELINE_M'] = df['x'].apply(lambda x: float(x)/100*14 if x<=50 else float(x-50)/100*14)
+    df['X_SIDELINE_M'] = df.apply(lambda s: float(s['y'])/100*15 if s['x']<=50 else float(100-s['y'])/100*15, axis=1)
+    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/100*14 if s['x']<=50 else float(100-s['x'])/100*14, axis=1)
 
 def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
@@ -176,7 +222,7 @@ def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
     df['T1'] = np.where(df['tno']==1, ta_code,
             np.where(df['tno']==2, tb_code, None))
     df['C1'] = df.apply(lambda x: '{num} {name}'.format(
-        num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '')), axis=1)
+        num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '').upper()), axis=1)
     df['AC'] = np.where((df['actionType']=='period') & (df['subType']=='end'), 'ENDP',
             np.where(df['actionType']=='substitution', 'SUBST', 
             np.where(df['actionType']=='2pt', 'P2',
@@ -289,7 +335,10 @@ def update_lineup(df, starter_dict):
             if pbp_dict[i-1]['SU'] == '+':
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
             elif pbp_dict[i-1]['SU'] == '-':
-                pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
+                if pbp_dict[i-1]['C1'] in pbp_dict[i][t]:
+                    pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
+                else:
+                    print pbp_dict[i-1]
             elif 'C2' in pbp_dict[i-1]:
                 print '%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time'])
                 print pbp_dict[i][t]

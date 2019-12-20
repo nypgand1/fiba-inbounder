@@ -54,7 +54,7 @@ class FibaLineupReport():
                 player_on_off_df = get_on_off_stats(player_team_lineup_df, t, self.id_table)
                 player_on_off_list.append(player_on_off_df)
 
-            team_on_off_df = pd.concat(player_on_off_list, axis=0, ignore_index=True)
+            team_on_off_df = pd.concat(player_on_off_list, axis=0, ignore_index=True, sort=False)
             team_on_off_df = team_on_off_df.sort_values(['NETRTG_DIFF'], ascending=[False])
             
             if t in self.id_table.keys():
@@ -76,19 +76,19 @@ class FibaLineupReport():
 class FibaLineupReportV5(FibaLineupReport):
     def __init__(self, game_id_list):
         r_list = [FibaPostGameReportV5(match_id) for match_id in game_id_list]
-        self.pbp_df = pd.concat([r.pbp_df for r in r_list])
+        self.pbp_df = pd.concat([r.pbp_df for r in r_list], sort=False)
         self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
 
 class FibaLineupReportV7(FibaLineupReport):
     def __init__(self, game_id_list):
         r_list = [FibaPostGameReportV7(event_id, game_unit) for (event_id, game_unit) in game_id_list]
-        self.pbp_df = pd.concat([r.pbp_df for r in r_list])
+        self.pbp_df = pd.concat([r.pbp_df for r in r_list], sort=False)
         self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
 
 def main():
     version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
-    num_games = raw_input('How Many Games? ')
     secs_above = raw_input('How Many Secs above in Lineup Stats? ')
+    num_games = raw_input('How Many Games? ')
     game_id_list = list()
 
     if int(version) == 5:
