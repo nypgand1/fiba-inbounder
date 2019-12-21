@@ -1,33 +1,53 @@
 # -*- coding: utf-8 -*-
 
+import os
 import pandas as pd
-from fiba_reporter.post_game_report import FibaPostGameReportV5
+from fiba_inbounder.settings import LOGGER
 from fiba_inbounder.formulas import update_zone
 from fiba_inbounder.shot_chart import ShotChart
+from fiba_reporter.post_game_report import FibaPostGameReportV5
 
 class FibaShotChartGenerator():
+    @staticmethod
+    def _gen_shot_chart(filename, df):
+            fgm_list = [0] * 14
+            fga_list = [0] * 14
+            for r in df.to_dict(orient='records'):
+                fgm_list[r['ZONE']] = r['FGM']
+                fga_list[r['ZONE']] = r['FGA']
+            ShotChart(filename, fgm_list, fga_list)
+
     def _gen_team_shot_chart(self):
         update_zone(self.shot_df)
         
-        def team_shot_chart(t, tsz_df):
-            fgm_list = [0] * 14
-            fga_list = [0] * 14
-            for r in tsz_df.to_dict(orient='records'):
-                fgm_list[r['ZONE']] = r['FGM']
-                fga_list[r['ZONE']] = r['FGA']
-            ShotChart('./output/{team}'.format(team=t), fgm_list, fga_list)
-
         team_shot_zone_df = self.shot_df.sort_values(['ZONE']).groupby(['T1', 'ZONE'], as_index=False, sort=False).sum()
         for t in team_shot_zone_df['T1'].unique():
-            print t
+            filename = './output/{team}'.format(team=t)
+            LOGGER.info('Generate Shot Chart to {filename}.png'.format(filename=filename))
             tsz_df = team_shot_zone_df[team_shot_zone_df['T1'].str.match(t)]
-            team_shot_chart(t, tsz_df)
+            FibaShotChartGenerator._gen_shot_chart(filename, tsz_df)
 
         team_shot_zone_df = self.shot_df.sort_values(['ZONE']).groupby(['OppTeamCode', 'ZONE'], as_index=False, sort=False).sum()
         for t in team_shot_zone_df['OppTeamCode'].unique():
-            print '{team}_OPP'.format(team=t)
+            filename = './output/{team}_opp'.format(team=t)
+            LOGGER.info('Generate Shot Chart to {filename}.png'.format(filename=filename))
             tsz_df = team_shot_zone_df[team_shot_zone_df['OppTeamCode'].str.match(t)]
-            team_shot_chart('{team}_OPP'.format(team=t), tsz_df)
+            FibaShotChartGenerator._gen_shot_chart(filename, tsz_df)
+
+    def _gen_player_shot_chart(self):
+        update_zone(self.shot_df)
+        
+        player_shot_zone_df = self.shot_df.sort_values(['ZONE']).groupby(['T1', 'C1', 'ZONE'], as_index=False, sort=False).sum()
+        for t in player_shot_zone_df['T1'].unique():
+            path = './output/{team}'.format(team=t)
+            if not os.path.exists(path):
+                os.mkdir(path)
+            tsz_df = player_shot_zone_df[player_shot_zone_df['T1'].str.match(t)]
+            for p in tsz_df['C1'].unique():
+                psz_df = tsz_df[tsz_df['C1'].str.match(p)]
+                filename = '{path}/{player}'.format(path=path, player=p)
+                LOGGER.info('Generate Shot Chart to {filename}.png'.format(filename=filename))
+                FibaShotChartGenerator._gen_shot_chart(filename, psz_df)
 
 class FibaShotChartGeneratorV5(FibaShotChartGenerator):
     def __init__(self, game_id_list):
@@ -48,6 +68,7 @@ def main():
         r = FibaShotChartGeneratorV5(game_id_list)
         
     r._gen_team_shot_chart()
+    r._gen_player_shot_chart()
 
 if __name__ == '__main__':
     main()
