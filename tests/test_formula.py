@@ -37,12 +37,10 @@ starter_dict = {
 }
 
 shot_df = pd.DataFrame([
-    {'actionNumber': 500, 'actionType': '2pt', 'p': 12, 'per': 3, 'perType': 'REGULAR', 'player': 'Y. CHEN', 'pno': 12, 
-        'previousAction': '', 'r': 0, 'shirtNumber': '8', 'subType': 'jumpshot', 'tno': 1, 'x': 20.120000839233, 'y': 72.900001525879},
-    {'actionNumber': 20, 'actionType': "2pt", 'p': 4, 'per': 1, 'perType': "REGULAR", 'player': "M. KEENE", 'pno': 4, 
-        'previousAction': "", 'r': 1, 'shirtNumber': "0", 'subType': "fadeaway", 'tno': 1, 'x': 83, 'y': 79.110000610352},
     {'r': 0, 'x': 33.229999542236, 'y': 50.900001525879, 'p': 6, 'pno': 6, 'tno': 1, 'per': 3, 'perType': "REGULAR", 'actionType': "3pt", 
-        'actionNumber': 500, 'previousAction': "", 'subType': "jumpshot", 'player': "C. LIN", 'shirtNumber': "12"}
+        'actionNumber': 500, 'previousAction': "", 'subType': "jumpshot", 'player': "C. LIN", 'shirtNumber': "12"},
+    {'r': 1, 'x': 85.180000305176, 'y': 85.050003051758, 'p': 1, 'pno': 1, 'tno': 2, 'per': 4, 'perType': "REGULAR", 'actionType': "2pt", 
+        'actionNumber': 616, 'previousAction': "", 'subType': "fadeaway", 'player': "M. MCKINNEY", 'shirtNumber': "10"}
     ])
 
 def test_update_shot_v5():
@@ -52,9 +50,8 @@ def test_update_shot_v5():
     update_range(shot_df)
 
     shot_dict = shot_df.to_dict(orient='records')
-    assert shot_dict[0]['ZONE'] == 3
+    assert shot_dict[0]['ZONE'] == 11
     assert shot_dict[1]['ZONE'] == 4
-    assert shot_dict[2] ==  {}
 
 def test_update_xy_v7():
     update_xy_v7(ac_df)

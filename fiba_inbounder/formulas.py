@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
+from settings import LOGGER
 
 def game_time(q):
     if q > 4:
@@ -340,14 +341,16 @@ def update_lineup(df, starter_dict):
                 if pbp_dict[i-1]['C1'] in pbp_dict[i][t]:
                     pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
                 else:
-                    print pbp_dict[i-1]
+                    LOGGER.warning(str(pbp_dict[i-1]))
             elif 'C2' in pbp_dict[i-1]:
-                print '%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time'])
-                print pbp_dict[i][t]
+                LOGGER.warning('%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time']))
+                LOGGER.warning(pbp_dict[i][t])
+               
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
-                print pbp_dict[i][t]
+                LOGGER.warning(pbp_dict[i][t])
+               
                 pbp_dict[i][t].remove(pbp_dict[i-1]['C2'])
-                print pbp_dict[i][t]
+                LOGGER.warning(pbp_dict[i][t])
 
         if pbp_dict[i-1]['AC'] == 'ENDP':
             pbp_dict[i]['SECS'] = 0
