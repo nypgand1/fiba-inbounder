@@ -15,8 +15,8 @@ FIBA_DETAIL_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{
 
 SHOT_CHART_BACKGROUND = 'shotchart_background_zone_652.png'
 SHOT_CHART_PERC_RED = [
-    0.55, #At Rim
+    0.5, #At Rim
     0.5, 0.5, 0.5, #Mid Two
-    0.45, 0.45, 0.45, 0.45, 0.45, #Long Two
+    0.5, 0.5, 0.5, 0.5, 0.5, #Long Two
     0.333, 0.333, 0.333, 0.333, 0.333 #Three
 ]
