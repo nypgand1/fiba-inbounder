@@ -183,6 +183,21 @@ def update_rtg(df, team_id):
     df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
     df['DEFRTG'] = 100 * np.where(~df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
 
+def update_team_rtg(df, opp_df):
+    result_list = list()
+    for team_id in df['TeamCode'].unique():
+        team_opp_df = pd.concat([df[df['TeamCode'].str.match(team_id)], opp_df[opp_df['OppTeamCode'].str.match(team_id)]])
+        team_opp_df['T1'] = team_opp_df['TeamCode'].replace(np.nan, '')
+        update_rtg(team_opp_df, team_id)
+        
+        team_opp_df['TeamCode'] = team_id
+        team_opp_df = team_opp_df.groupby(['TeamCode'], as_index=False, sort=False).sum()
+        result_list.append(team_opp_df[['TeamCode', 'OFFRTG', 'DEFRTG']])
+    
+    result_df = pd.concat(result_list)
+    result_df['NETRTG'] = result_df['OFFRTG'] - result_df['DEFRTG']
+    return result_df
+
 def update_secs_v7(df):
     df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
 
