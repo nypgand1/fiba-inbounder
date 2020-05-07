@@ -5,20 +5,28 @@ from fiba_reporter.post_game_report import FibaPostGameReportV5
 from fiba_inbounder.formulas import update_efg, update_usg, update_player_avg
 
 class FibaPlayerStatsReport():
-    def _gen_player_avg_md(self):
+    def _get_player_avg_df(self):
         player_stats_df = self.player_stats_df[self.player_stats_df['SECS'] > 0]
         player_avg_stats_df = player_stats_df.groupby(['TeamCode', 'JerseyNumber', 'Name'], as_index=False, sort=False).mean()
         player_avg_stats_df['GP'] = player_stats_df.groupby(['TeamCode', 'JerseyNumber', 'Name'], sort=False).size().reset_index(name='GP')['GP']
         update_player_avg(player_avg_stats_df)
-        result_str_list = list()
 
+        ps_df_list = list()
         for t in player_avg_stats_df['TeamCode'].unique():
             ps_df = player_avg_stats_df[player_avg_stats_df['TeamCode'].str.match(t)]
             update_efg(ps_df)
             update_usg(ps_df)
 
             ps_df = ps_df.sort_values(['SECS', 'EFG', 'USG'], ascending=[False, False, True])
+            ps_df_list.append(ps_df)
+        
+        return pd.concat(ps_df_list, sort=False)
 
+    def _gen_player_avg_md(self):
+        result_str_list = list()
+        
+        player_avg_stats_df = self._get_player_avg_df()
+        for t in player_avg_stats_df['TeamCode'].unique():
             header_str_list = '| # | Name | GP | Mins | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS | eFG% |'
             align_str_list = '|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
             table_str = '|' + ps_df[['JerseyNumber', 'Name', 'GP', 'TP', 'FG2MA_STR', 'FG2P_STR', 'FG3MA_STR', 'FG3P_STR', 'FTMA_STR', 'FTP_STR',
@@ -34,6 +42,9 @@ class FibaPlayerStatsReport():
             result_str_list.append('\n'.join(t_result_str_list))
 
         return '\n'.join(result_str_list) + '\n'
+
+    def _gen_player_avg_csv(self):
+        pass
 
 class FibaPlayerStatsReportV5(FibaPlayerStatsReport):
     def __init__(self, game_id_list):
