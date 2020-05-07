@@ -1,4 +1,3 @@
-from fiba_inbounder.game_parser import FibaGameParser
 from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
 
 def test_gen_period_scores_md_v5(): 
@@ -19,7 +18,7 @@ def test_gen_key_stats_md_v5():
 
 def test_gen_team_shot_range_md_v5():    
     r = FibaPostGameReportV5(match_id='987140')
-    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|38.2%|11/29|37.9%|\n|Mid 2|7.9%|1/6|16.7%|\n|Long 2|3.9%|0/3|0.0%|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**52.2%**|26/35|**74.3%**|\n|Mid 2|11.9%|2/8|25.0%|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
+    assert r._gen_team_shot_range_md() == 'SGH\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|30.3%|9/23|39.1%|\n|Mid 2|13.2%|2/10|20.0%|\n|Long 2|6.6%|1/5|20.0%|\n|3PT|**50.0%**|16/38|**63.2%**|\n|Total||28/76||\nFMD\n| Shot Range | Freq | FGM/A | eFG% |\n|:---:|---:|---:|---:|\n|Rim|**46.3%**|26/31|**83.9%**|\n|Mid 2|11.9%|1/8|12.5%|\n|Long 2|6.0%|1/4|25.0%|\n|3PT|35.8%|6/24|37.5%|\n|Total||34/67||\n'
 
 def test_gen_player_stats_md_v5():
     r = FibaPostGameReportV5(match_id='987140')

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
+from settings import LOGGER
 
 def game_time(q):
     if q > 4:
@@ -182,6 +183,21 @@ def update_rtg(df, team_id):
     df['OFFRTG'] = 100 * np.where(df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
     df['DEFRTG'] = 100 * np.where(~df['T1'].str.match(team_id), (df['PTS'] / df['POSS']).replace(np.nan, 0), 0)
 
+def update_team_rtg(df, opp_df):
+    result_list = list()
+    for team_id in df['TeamCode'].unique():
+        team_opp_df = pd.concat([df[df['TeamCode'].str.match(team_id)], opp_df[opp_df['OppTeamCode'].str.match(team_id)]])
+        team_opp_df['T1'] = team_opp_df['TeamCode'].replace(np.nan, '')
+        update_rtg(team_opp_df, team_id)
+        
+        team_opp_df['TeamCode'] = team_id
+        team_opp_df = team_opp_df.groupby(['TeamCode'], as_index=False, sort=False).sum()
+        result_list.append(team_opp_df[['TeamCode', 'OFFRTG', 'DEFRTG']])
+    
+    result_df = pd.concat(result_list)
+    result_df['NETRTG'] = result_df['OFFRTG'] - result_df['DEFRTG']
+    return result_df
+
 def update_secs_v7(df):
     df['SECS'] = df['TP'].replace(np.nan, '00:00').apply(lambda x: base60_from(x))
 
@@ -193,7 +209,7 @@ def update_xy_v7(df):
 def update_xy_v5(df):
     #Left Corner as (0, 0) in Meters
     df['X_SIDELINE_M'] = df.apply(lambda s: float(s['y'])/100*15 if s['x']<=50 else float(100-s['y'])/100*15, axis=1)
-    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/100*14 if s['x']<=50 else float(100-s['x'])/100*14, axis=1)
+    df['Y_BASELINE_M'] = df.apply(lambda s: float(s['x'])/50*14 if s['x']<=50 else float(100-s['x'])/50*14, axis=1)
 
 def update_pbp_stats_v7(df):
     #TODO: Still Lots of Stats
@@ -221,6 +237,8 @@ def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
     #TODO: Still Lots of Stats
     df['T1'] = np.where(df['tno']==1, ta_code,
             np.where(df['tno']==2, tb_code, None))
+    df['OppTeamCode'] = np.where(df['tno']==1, tb_code,
+            np.where(df['tno']==2, ta_code, None))
     df['C1'] = df.apply(lambda x: '{num} {name}'.format(
         num=x['shirtNumber'].zfill(2), name=x['player'].replace(' ', '').upper()), axis=1)
     df['AC'] = np.where((df['actionType']=='period') & (df['subType']=='end'), 'ENDP',
@@ -338,14 +356,16 @@ def update_lineup(df, starter_dict):
                 if pbp_dict[i-1]['C1'] in pbp_dict[i][t]:
                     pbp_dict[i][t].remove(pbp_dict[i-1]['C1'])
                 else:
-                    print pbp_dict[i-1]
+                    LOGGER.warning(str(pbp_dict[i-1]))
             elif 'C2' in pbp_dict[i-1]:
-                print '%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time'])
-                print pbp_dict[i][t]
+                LOGGER.warning('%d-%d %s' % (pbp_dict[i-1]['SA'], pbp_dict[i-1]['SB'], pbp_dict[i-1]['Time']))
+                LOGGER.warning(pbp_dict[i][t])
+               
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])
-                print pbp_dict[i][t]
+                LOGGER.warning(pbp_dict[i][t])
+               
                 pbp_dict[i][t].remove(pbp_dict[i-1]['C2'])
-                print pbp_dict[i][t]
+                LOGGER.warning(pbp_dict[i][t])
 
         if pbp_dict[i-1]['AC'] == 'ENDP':
             pbp_dict[i]['SECS'] = 0
