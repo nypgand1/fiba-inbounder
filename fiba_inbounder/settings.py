@@ -13,6 +13,10 @@ FIBA_TEAM_STATS_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PR
 FIBA_PLAY_BY_PLAY_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{event_id}_GAMEACTIONS_{game_unit}_{period_id}_JSON.json'
 FIBA_DETAIL_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{event_id}_COMPDETAILS_{game_unit}_JSON.json'
 
+PLEAGUE_GAME_TEAM_STATS_URL = 'http://api.pleagueplus.meetagile.com/rest/game/{game_id}'
+
+REG_FULL_GAME_MINS = 40
+
 SHOT_CHART_BACKGROUND = 'shotchart_background_zone_652.png'
 SHOT_CHART_PERC_RED = [
     0.5, #At Rim

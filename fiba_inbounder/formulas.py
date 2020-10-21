@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-from settings import LOGGER
+from settings import LOGGER, REG_FULL_GAME_MINS
 
 def game_time(q):
     if q > 4:
-        return 40 + 5 * (q-4)
+        return REG_FULL_GAME_MINS + REG_FULL_GAME_MINS/4/2 * (q-4)
     return 10 * q
 
 def base60_from(time_str):
@@ -35,9 +35,40 @@ def time_diff(time_str_before, time_str_after):
     return base60_from(time_str_before) - base60_from(time_str_after)
 
 def score_bold_md(score):
-    if int(score) >= 20:
+    if int(score) >= (20*REG_FULL_GAME_MINS/40):
         return '**{score}**'.format(score=score)
     return str(score)
+
+def update_team_stats_pleague_to_v7(df):
+    df['AS'] = df['ast']
+    df['BS'] = df['blk']
+    df['PF'] = df['pfoul']
+    df['FTA'] = df['ft_a'] + df['ft_m']
+    df['FTM'] = df['ft_m']
+    df['SECS'] = df['seconds']
+    df['TP'] = df['seconds'].apply(lambda x: base60_to(x))
+    df['PTS'] = df['points']
+    df['DR']  = df['reb_d']
+    df['OR'] = df['reb_o']
+    df['REB'] = df['DR'] + df['OR']
+    df['ST'] = df['stl']
+    df['FG3A'] = df['trey_a'] + df['trey_m']
+    df['FG3M'] = df['trey_m']
+    df['TO'] = df['turnover']
+    df['FG2A'] = df['two_a'] + df['two_m']
+    df['FG2M'] = df['two_m']
+
+    df['FGA'] = df['FG2A'] + df['FG3A']
+    df['FGM'] = df['FG2M'] + df['FG3M']
+    
+    #TODO
+    '''
+    df['A_FBP'] = df['tot_sPointsFastBreak']
+    df['A_SCP'] = df['tot_sPointsSecondChance']
+    df['A_PAT'] = df['tot_sPointsFromTurnovers']
+    df['A_PIP'] = df['tot_sPointsInThePaint']
+    df['A_PFB'] = df['tot_sBenchPoints']
+    '''
 
 def update_team_stats_v5_to_v7(df):
     df['AS'] = df['tot_sAssists']
@@ -166,7 +197,7 @@ def update_to_ratio(df):
 
 def update_pace(df):
     update_poss(df)
-    df['PACE'] = 40 * 60 * 5 * (df['POSS'] / df['SECS']).replace(np.nan, 0)
+    df['PACE'] = REG_FULL_GAME_MINS * 60 * 5 * (df['POSS'] / df['SECS']).replace(np.nan, 0)
 
 def update_four_factors(df):
     update_pace(df)

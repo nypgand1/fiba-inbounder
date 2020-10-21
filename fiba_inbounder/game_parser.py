@@ -1,14 +1,62 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import fiba_inbounder.formulas
 from fiba_inbounder.communicator import FibaCommunicator
 from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
         update_secs_v7, update_xy_v7, update_xy_v5, \
         update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
-        update_team_stats_v5_to_v7, update_player_stats_v5_to_v7
+        update_team_stats_v5_to_v7, update_player_stats_v5_to_v7, \
+        update_team_stats_pleague_to_v7
 
 class FibaGameParser:
     @staticmethod
+    def get_game_stats_dataframe_pleague(game_id):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
+        game_json = FibaCommunicator.get_game_team_stats_pleague(game_id)
+        team_stats_json = list()
+
+        for ha in ['home', 'away']:
+            t = game_json[u'team_stats_' + ha]
+            t['Name'] = game_json[ha + '_name']
+            t['TeamCode'] = game_json[ha + '_name']
+
+            t['Periods'] = [
+                    {'Id': 'Q' + str(q+1), 'Score': score} if q < 4 else
+                    {'Id': 'OT' + str(q-3), 'Score': score}
+                    for q, score in enumerate(game_json['score_' + ha + '_p2p'])]
+            t['PeriodIdList'] = [p['Id'] for p in t['Periods']]
+            
+            t['SECS'] = game_json['team_stats_' + ha]['seconds']
+            t['TP'] = base60_to(t['SECS'])
+       
+            team_stats_json.append(t)
+
+            #Player Stats
+            #TODO
+        
+        team_a_stats_json = team_stats_json[0]
+        team_b_stats_json = team_stats_json[1]
+       
+        #TODO
+        '''
+        team_a_player_stats_list = [p for p in team_stats_json['1']['pl'].values()]
+        team_b_player_stats_list = [p for p in team_stats_json['2']['pl'].values()]
+        '''
+        #Oppenent DREB for calculating OREB%
+        team_a_stats_json['OPP_DR'] = team_b_stats_json['reb_d']
+        team_b_stats_json['OPP_DR'] = team_a_stats_json['reb_d']
+
+        team_a_stats_json['OppTeamCode'] = team_b_stats_json['TeamCode']
+        team_b_stats_json['OppTeamCode'] = team_a_stats_json['TeamCode']
+
+        team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
+        update_team_stats_pleague_to_v7(team_stats_df)
+
+        return team_stats_df
+
+    @staticmethod
     def get_game_data_dataframe_v5(match_id):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 40
         game_json = FibaCommunicator.get_game_data_v5(match_id)
         team_stats_json = game_json['tm']
 
@@ -19,7 +67,7 @@ class FibaGameParser:
             t['Periods'] = [{'Id': period.replace('_score', '').replace('p', 'q').upper(), 'Score': score}
                     for period, score in t.iteritems() if period.startswith('p') and period.endswith('_score')]
             if 'ot_score' in t:
-                t['Periods'].append({'Id': 'OT', 'Score':t['ot_score']})
+                t['Periods'].append({'Id': 'OT', 'Score': t['ot_score']})
             t['PeriodIdList'] = [p['Id'] for p in t['Periods']]
 
             if base60_from(t['tot_sMinutes']) == 0:
@@ -65,6 +113,7 @@ class FibaGameParser:
 
     @staticmethod
     def get_game_stats_dataframe_v7(event_id, game_unit):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 40
         game_json = FibaCommunicator.get_game_team_stats_v7(event_id, game_unit)
         team_stats_json = game_json['content']['full']['Competitors']
 
@@ -105,6 +154,7 @@ class FibaGameParser:
 
     @staticmethod
     def get_game_play_by_play_dataframe_v7(event_id, game_unit, period_id_list):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 40
         pbp_json_list = [
             FibaCommunicator.get_game_play_by_play_v7(event_id, game_unit, p)['content']['full']['Items']
             for p in period_id_list]
@@ -116,6 +166,7 @@ class FibaGameParser:
 
     @staticmethod
     def get_game_details_dict_v7(event_id, game_unit):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 40
         dtl_dict = FibaCommunicator.get_game_details_v7(event_id, game_unit)['content']['full']['Competitors']
 
         id_table = {k: ((v['TeamCode']) if v['IsTeam'] else ('{num} {short}{sur}'.format(num=v['Bib'].zfill(2), short=v['FirstNameShort'], sur=v['Name'])))

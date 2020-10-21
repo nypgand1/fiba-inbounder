@@ -1,4 +1,13 @@
-from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
+# -*- coding: utf-8 -*-
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7, FibaPostGameReportPLeague
+
+def test_gen_period_scores_md_pleague(): 
+    r = FibaPostGameReportPLeague(game_id='2')
+    assert r._gen_period_scores_md() == u'|Scores|Q1|Q2|Q3|Q4|Total|\n|:---:|---:|---:|---:|---:|---:|\n|桃園領航猿|**24**|14|20|9|67|\n|臺北富邦勇士|18|15|**28**|14|75|\n'
+
+def test_gen_four_factors_md_pleague():
+    r = FibaPostGameReportPLeague(game_id='4')
+    assert r._gen_four_factors_md() == u'| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |\n|:---:|---:|---:|---:|---:|---:|\n|臺北富邦勇士|89.7|**51.4%**|22.8%|**42.1%**|19.4%|\n|新竹攻城獅|89.7|40.9%|15.2%|24.5%|17.3%|\n'
 
 def test_gen_period_scores_md_v5(): 
     r = FibaPostGameReportV5(match_id='1129356')

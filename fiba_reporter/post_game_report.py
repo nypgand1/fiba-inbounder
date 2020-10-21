@@ -11,8 +11,8 @@ class FibaPostGameReport():
 
         header_str_list = ['|Scores']
         align_str_list = ['|:---:']
-        home_str_list = ['|{team_name}'.format(team_name=stats_dict[0]['TeamCode'])]
-        away_str_list = ['|{team_name}'.format(team_name=stats_dict[1]['TeamCode'])]
+        home_str_list = [u'|{team_name}'.format(team_name=stats_dict[0]['TeamCode'])]
+        away_str_list = [u'|{team_name}'.format(team_name=stats_dict[1]['TeamCode'])]
    
         for i, p in enumerate(stats_dict[0]['PeriodIdList']):
             header_str_list.append(p)
@@ -45,7 +45,7 @@ class FibaPostGameReport():
             encoding='utf-8',
             index=False)[:-2]
         
-        result_str_list = [header_str_list, align_str_list, table_str]
+        result_str_list = [header_str_list, align_str_list, table_str.decode('utf-8')]
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_key_stats_md(self):
@@ -141,6 +141,10 @@ class FibaPostGameReport():
  
         return '\n'.join(result_str_list) + '\n'
 
+class FibaPostGameReportPLeague(FibaPostGameReport):
+    def __init__(self, game_id):
+        self.team_stats_df = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
+
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
         self.team_stats_df, self.player_stats_df, self.starter_dict, self.pbp_df, self.shot_df = FibaGameParser.get_game_data_dataframe_v5(match_id)
@@ -164,7 +168,7 @@ class FibaPostGameReportV7(FibaPostGameReport):
             update_lineup(self.pbp_df, self.starter_dict)
 
 def main():
-    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(9) P League\n')
 
     if int(version) == 5:
         match_id = raw_input('Match Id? ')
@@ -175,7 +179,15 @@ def main():
         game_unit = raw_input('Game Unit? ')
         r = FibaPostGameReportV7(str(event_id), str(game_unit))
         
-    print '## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+    elif str(version) == '9':
+        game_id = raw_input('Game Id? ')
+        r = FibaPostGameReportPLeague(str(game_id))
+        
+        print '## Scores\n' + r._gen_period_scores_md() + \
+            '\n## Pace & Four Factors\n' + r._gen_four_factors_md()
+        return
+
+    print u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
         '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
         '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
         '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
