@@ -70,6 +70,33 @@ def update_team_stats_pleague_to_v7(df):
     df['A_PFB'] = df['tot_sBenchPoints']
     '''
 
+def update_player_stats_pleague_to_v7(df):
+    df['AS'] = df['ast']
+    df['BS'] = df['blk']
+    df['PF'] = df['pfoul']
+    df['FTA'] = df['ft_a'] + df['ft_m']
+    df['FTM'] = df['ft_m']
+    df['SECS'] = df['seconds']
+    df['TP'] = df['seconds'].apply(lambda x: base60_to(x))
+    df['PTS'] = df['points']
+    df['DR']  = df['reb_d']
+    df['OR'] = df['reb_o']
+    df['REB'] = df['DR'] + df['OR']
+    df['ST'] = df['stl']
+    df['FG3A'] = df['trey_a'] + df['trey_m']
+    df['FG3M'] = df['trey_m']
+    df['TO'] = df['turnover']
+    df['FG2A'] = df['two_a'] + df['two_m']
+    df['FG2M'] = df['two_m']
+
+    df['FGA'] = df['FG2A'] + df['FG3A']
+    df['FGM'] = df['FG2M'] + df['FG3M']
+ 
+    df['PM'] = df['positive']
+
+    df['JerseyNumber'] = df['jersey']
+    df['Name'] = df['name_alt']
+
 def update_team_stats_v5_to_v7(df):
     df['AS'] = df['tot_sAssists']
     df['BS'] = df['tot_sBlocks']

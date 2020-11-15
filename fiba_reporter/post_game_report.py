@@ -105,13 +105,13 @@ class FibaPostGameReport():
                 result_str_list.append(t)
             result_str_list.append('| # | Name | Mins | eFG% | USG% | +/- |')
             result_str_list.append('|:---:|:---:|---:|---:|---:|---:|')
-            result_str_list.append('|' + ps_df[['JerseyNumber', 'Name', 'TP', 'EFG_STR', 'USG_STR', 'PM']].to_csv(
+            result_str_list.append(('|' + ps_df[['JerseyNumber', 'Name', 'TP', 'EFG_STR', 'USG_STR', 'PM']].to_csv(
                 sep='|',
                 line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2])
+                index=False)[:-2]).decode('utf-8'))
             
         return '\n'.join(result_str_list) + '\n'
 
@@ -143,7 +143,8 @@ class FibaPostGameReport():
 
 class FibaPostGameReportPLeague(FibaPostGameReport):
     def __init__(self, game_id):
-        self.team_stats_df = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
+        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
+        self.id_table = dict()
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
@@ -184,7 +185,8 @@ def main():
         r = FibaPostGameReportPLeague(str(game_id))
         
         print '## Scores\n' + r._gen_period_scores_md() + \
-            '\n## Pace & Four Factors\n' + r._gen_four_factors_md()
+            '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+            '\n## Advanced Player Stats\n' + r._gen_player_stats_md()
         return
 
     print u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \

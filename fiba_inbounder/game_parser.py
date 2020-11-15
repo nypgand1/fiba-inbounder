@@ -6,7 +6,7 @@ from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
         update_secs_v7, update_xy_v7, update_xy_v5, \
         update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
         update_team_stats_v5_to_v7, update_player_stats_v5_to_v7, \
-        update_team_stats_pleague_to_v7
+        update_team_stats_pleague_to_v7, update_player_stats_pleague_to_v7
 
 class FibaGameParser:
     @staticmethod
@@ -14,6 +14,7 @@ class FibaGameParser:
         fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
         game_json = FibaCommunicator.get_game_team_stats_pleague(game_id)
         team_stats_json = list()
+        player_stats_list = list()
 
         for ha in ['home', 'away']:
             t = game_json[u'team_stats_' + ha]
@@ -32,16 +33,17 @@ class FibaGameParser:
             team_stats_json.append(t)
 
             #Player Stats
-            #TODO
+            for p in game_json['player_stats_' + ha]:
+                p['TeamCode'] = t['Name']
+                p['JerseyNumber'] = p['jersey']
+                p['Name']  = p['name_alt']
+                p['NumName'] = u'{num} {name}'.format(num=p['JerseyNumber'].zfill(2), name=p['Name'])
         
+                player_stats_list.append(p)
+
         team_a_stats_json = team_stats_json[0]
         team_b_stats_json = team_stats_json[1]
        
-        #TODO
-        '''
-        team_a_player_stats_list = [p for p in team_stats_json['1']['pl'].values()]
-        team_b_player_stats_list = [p for p in team_stats_json['2']['pl'].values()]
-        '''
         #Oppenent DREB for calculating OREB%
         team_a_stats_json['OPP_DR'] = team_b_stats_json['reb_d']
         team_b_stats_json['OPP_DR'] = team_a_stats_json['reb_d']
@@ -50,9 +52,11 @@ class FibaGameParser:
         team_b_stats_json['OppTeamCode'] = team_a_stats_json['TeamCode']
 
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
+        player_stats_df = pd.DataFrame(player_stats_list)
         update_team_stats_pleague_to_v7(team_stats_df)
+        update_player_stats_pleague_to_v7(player_stats_df)
 
-        return team_stats_df
+        return team_stats_df, player_stats_df
 
     @staticmethod
     def get_game_data_dataframe_v5(match_id):
