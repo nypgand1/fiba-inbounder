@@ -261,9 +261,9 @@ def main():
             game_id_list.append(str(match_id))
         r = FibaPreGameReportV5(game_id_list)
 
-    print '## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
+    print ('## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
             '\n## H2H Stats\n' + r._gen_h2h_md() + '\n## Key Stats\n' + r._gen_key_stats_md() + \
-            '\n## Player Stats\n' + r._gen_player_stats_md()
+            '\n## Player Stats\n' + r._gen_player_stats_md())
 
 if __name__ == '__main__':
     main()

@@ -184,15 +184,15 @@ def main():
         game_id = raw_input('Game Id? ')
         r = FibaPostGameReportPLeague(str(game_id))
         
-        print '## Scores\n' + r._gen_period_scores_md() + \
+        print ('## Scores\n' + r._gen_period_scores_md() + \
             '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
-            '\n## Advanced Player Stats\n' + r._gen_player_stats_md()
+            '\n## Advanced Player Stats\n' + r._gen_player_stats_md())
         return
 
-    print u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+    print (u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
         '\n## Key Stats\n' + r._gen_key_stats_md() + '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
         '\n## Advanced Player Stats\n' + r._gen_player_stats_md() + \
-        '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md()
+        '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md())
 
 if __name__ == '__main__':
     main()

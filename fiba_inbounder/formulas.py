@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-from settings import LOGGER, REG_FULL_GAME_MINS
+from fiba_inbounder.settings import LOGGER, REG_FULL_GAME_MINS
 
 def game_time(q):
     if q > 4:
@@ -19,7 +19,7 @@ def base60_to(secs):
     secs = int(secs)
     num_list = list()
     if secs >= 60:
-        d = secs / 60
+        d = int(secs / 60)
         num_list.append('%02d' % (secs - 60*d))
         num_list.append('%02d' % d)
     else:

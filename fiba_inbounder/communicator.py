@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
-from settings import LOGGER
-from settings import FIBA_DATA_URL_V5, FIBA_TEAM_STATS_URL_V7, \
+from fiba_inbounder.settings import LOGGER
+from fiba_inbounder.settings import FIBA_DATA_URL_V5, FIBA_TEAM_STATS_URL_V7, \
         FIBA_PLAY_BY_PLAY_URL_V7, FIBA_DETAIL_URL_V7, \
         PLEAGUE_GAME_TEAM_STATS_URL
 
