@@ -143,8 +143,10 @@ class FibaPostGameReport():
 
 class FibaPostGameReportPLeague(FibaPostGameReport):
     def __init__(self, game_id):
-        self.team_stats_df, self.player_stats_df = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
+        self.team_stats_df, self.player_stats_df, team_id_away, team_id_home = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
         self.id_table = dict()
+
+        sub_df = FibaGameParser.get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home)
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):

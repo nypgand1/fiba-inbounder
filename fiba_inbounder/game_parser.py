@@ -12,7 +12,7 @@ class FibaGameParser:
     @staticmethod
     def get_game_stats_dataframe_pleague(game_id):
         fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
-        game_json = FibaCommunicator.get_game_team_stats_pleague(game_id)
+        game_json = FibaCommunicator.get_game_stats_pleague(game_id)
         team_stats_json = list()
         player_stats_list = list()
 
@@ -56,7 +56,21 @@ class FibaGameParser:
         update_team_stats_pleague_to_v7(team_stats_df)
         update_player_stats_pleague_to_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df
+        return team_stats_df, player_stats_df, game_json['away_id'], game_json['home_id']
+
+    @staticmethod
+    def get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
+        
+        sub_json_list = [
+            FibaCommunicator.get_game_sub_pleague(game_id, team_id)
+            for team_id in [team_id_away, team_id_home]]
+
+        df = pd.DataFrame(sum(sub_json_list, []))
+        #TODO: update sub
+        #update_xy_v7(df)
+        #update_pbp_stats_v7(df)
+        return df
 
     @staticmethod
     def get_game_data_dataframe_v5(match_id):
@@ -118,7 +132,7 @@ class FibaGameParser:
     @staticmethod
     def get_game_stats_dataframe_v7(event_id, game_unit):
         fiba_inbounder.formulas.REG_FULL_GAME_MINS = 40
-        game_json = FibaCommunicator.get_game_team_stats_v7(event_id, game_unit)
+        game_json = FibaCommunicator.get_game_stats_v7(event_id, game_unit)
         team_stats_json = game_json['content']['full']['Competitors']
 
         for t in team_stats_json:

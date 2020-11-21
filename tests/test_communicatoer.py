@@ -5,7 +5,7 @@ def test_get_game_data_v5():
     assert result['tm']['1']['name'] == 'Singapore Slingers'
 
 def test_get_game_team_stats_v7():
-    result = FibaCommunicator.get_game_team_stats_v7(event_id='208053', game_unit='24532-18-A')
+    result = FibaCommunicator.get_game_stats_v7(event_id='208053', game_unit='24532-18-A')
     assert result['content']['full']['Competitors'][0]['Name'] == 'Pauian'
 
 def test_get_game_play_by_play_v7():
