@@ -3,7 +3,7 @@ import requests
 from fiba_inbounder.settings import LOGGER
 from fiba_inbounder.settings import FIBA_DATA_URL_V5, FIBA_GAME_STATS_URL_V7, \
         FIBA_PLAY_BY_PLAY_URL_V7, FIBA_DETAIL_URL_V7, \
-        PLEAGUE_GAME_STATS_URL, PLEAGUE_SUB_URL
+        PLEAGUE_GAME_STATS_URL, PLEAGUE_SUB_URL, PLEAGUE_PLAY_BY_PLAY_URL
 
 class FibaCommunicator:
     @staticmethod
@@ -54,5 +54,11 @@ class FibaCommunicator:
     @staticmethod
     def get_game_sub_pleague(game_id, team_id):
         url = PLEAGUE_SUB_URL.format(game_id=game_id, team_id=team_id)
+        r = FibaCommunicator.get_pleague(url)
+        return r.json()
+
+    @staticmethod
+    def get_game_play_by_play_pleague(game_id, team_id):
+        url = PLEAGUE_PLAY_BY_PLAY_URL.format(game_id=game_id, team_id=team_id)
         r = FibaCommunicator.get_pleague(url)
         return r.json()

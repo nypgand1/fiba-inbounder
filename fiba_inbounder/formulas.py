@@ -97,20 +97,6 @@ def update_player_stats_pleague_to_v7(df):
     df['JerseyNumber'] = df['jersey']
     df['Name'] = df['name_alt']
 
-def update_sub_pleague_to_v7(df, team_id_away):
-    df['AC'] = 'SUBST'
-    df['GT'] = df['createDate']
-    #df[''] = df['quarter']
-    df['Time'] = df['time']
-
-    df['C1'] = df['rosterSn']
-    df['SU'] = df['status'].replace(True, '+').replace(False, '-')
-
-    df['T1'] = df['teamSn']
-
-    df['SA'] = np.where(df['T1']==team_id_away, df['teamScore'], df['opponentTeamScore'])
-    df['SB'] = np.where(df['T1']==team_id_away, df['opponentTeamScore'], df['teamScore'])
-
 def update_team_stats_v5_to_v7(df):
     df['AS'] = df['tot_sAssists']
     df['BS'] = df['tot_sBlocks']
@@ -312,6 +298,49 @@ def update_pbp_stats_v7(df):
     df['AS'] = np.where(df['AC']=='ASS', 1, 0)
     df['TO'] = np.where(df['AC']=='TO', 1, 0)
 
+def update_sub_pleague_to_v7(df, team_id_away):
+    df['AC'] = 'SUBST'
+    df['SU'] = df['status'].replace(True, '+').replace(False, '-')
+    
+    df['GT'] = df['createDate']
+    #df[''] = df['quarter']
+    df['Time'] = df['time']
+
+    df['C1'] = df['rosterSn']
+    df['T1'] = df['teamSn'].apply(lambda x: 't' + str(x))
+
+    df['SA'] = np.where(df['T1']==team_id_away, df['teamScore'], df['opponentTeamScore'])
+    df['SB'] = np.where(df['T1']==team_id_away, df['opponentTeamScore'], df['teamScore'])
+
+def update_pbp_stats_pleague_to_v7(df):
+    #TODO: Still Lots of Stats
+    df['AC'] = np.where((df['eventName']=='miss') | (df['eventName']=='score'),
+            np.where(df['eventValue']==2, 'P2',
+            np.where(df['eventValue']==3, 'P3', None)),
+            None)
+    
+    df['GT'] = df['createDate']
+    #df[''] = df['quarter']
+    #df['Time'] = df['eventQuarterTime']
+
+    df['C1'] = df['rosterSn']
+    df['T1'] = df['teamSn'].apply(lambda x: 't' + str(x))
+    #df['OppTeamCode'] = np.where(df['tno']==1, tb_code,
+    #        np.where(df['tno']==2, ta_code, None))
+    
+    df['FG2M'] = df.apply(lambda x: 1 if x['AC']=='P2' and x['eventName']=='score' else 0, axis=1)
+    df['FG3M'] = df.apply(lambda x: 1 if x['AC']=='P3' and x['eventName']=='score' else 0, axis=1)
+    df['FG2A'] = df.apply(lambda x: 1 if x['AC']=='P2' else 0, axis=1)
+    df['FG3A'] = df.apply(lambda x: 1 if x['AC']=='P3' else 0, axis=1)
+
+    df['FGA'] = df['FG2A'] + df['FG3A']
+    df['FGM'] = df['FG2M'] + df['FG3M']
+    df['FGPTS'] = 2 * df['FG2M'] + 3 *df['FG3M']
+
+    df['FTM'] = np.where((df['eventName']=='freethrow') & (df['eventValue']==1) , 1, 0)
+    df['FTA'] = np.where(df['eventName']=='freethrow', 1, 0)
+    df['PTS'] = df['FGPTS'] + df['FTM']
+
 def update_pbp_stats_v5_to_v7(df, ta_code, tb_code):
     #TODO: Still Lots of Stats
     df['T1'] = np.where(df['tno']==1, ta_code,
@@ -394,6 +423,9 @@ def update_zone(df):
                                     7, #Right Elbow Long 2PT
                                     6))))), #Center Long 2PT
             None))
+
+def update_zone_pleague(df):
+    df['ZONE'] = df.apply(lambda x: 14-x['scoringArea'], axis=1)
 
 def update_range(df):
     df['RANGE'] = np.where(df['ZONE']==0, 

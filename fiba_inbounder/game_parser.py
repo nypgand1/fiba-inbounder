@@ -7,7 +7,7 @@ from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
         update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
         update_team_stats_v5_to_v7, update_player_stats_v5_to_v7, \
         update_team_stats_pleague_to_v7, update_player_stats_pleague_to_v7, \
-        update_sub_pleague_to_v7
+        update_sub_pleague_to_v7, update_pbp_stats_pleague_to_v7
 
 class FibaGameParser:
     @staticmethod
@@ -16,6 +16,7 @@ class FibaGameParser:
         game_json = FibaCommunicator.get_game_stats_pleague(game_id)
         team_stats_json = list()
         player_stats_list = list()
+        team_code_table = dict()
         id_table = dict()
 
         for ha in ['home', 'away']:
@@ -33,6 +34,7 @@ class FibaGameParser:
             t['TP'] = base60_to(t['SECS'])
        
             team_stats_json.append(t)
+            id_table['t' + str(game_json[ha + '_id'])] = t['TeamCode']
 
             #Player Stats
             for p in game_json['player_stats_' + ha]:
@@ -59,7 +61,7 @@ class FibaGameParser:
         update_team_stats_pleague_to_v7(team_stats_df)
         update_player_stats_pleague_to_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df, game_json['away_id'], game_json['home_id'], id_table
+        return team_stats_df, player_stats_df, str(game_json['away_id']), str(game_json['home_id']), id_table
 
     @staticmethod
     def get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home):
@@ -72,6 +74,19 @@ class FibaGameParser:
         df = pd.DataFrame(sum(sub_json_list, []))
         update_sub_pleague_to_v7(df, team_id_away)
         
+        return df
+
+    @staticmethod
+    def get_game_play_by_play_dataframe_pleague(game_id, team_id_away, team_id_home):
+        fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
+        
+        pbp_json_list = [
+            FibaCommunicator.get_game_play_by_play_pleague(game_id, team_id)
+            for team_id in [team_id_away, team_id_home]]
+
+        df = pd.DataFrame(sum(pbp_json_list, []))
+        update_pbp_stats_pleague_to_v7(df)
+
         return df
 
     @staticmethod

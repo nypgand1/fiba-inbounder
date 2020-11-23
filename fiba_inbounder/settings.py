@@ -15,6 +15,7 @@ FIBA_DETAIL_URL_V7 = 'https://livecache.sportresult.com/node/db/FIBASTATS_PROD/{
 
 PLEAGUE_GAME_STATS_URL = 'http://api.pleagueplus.meetagile.com/rest/game/{game_id}'
 PLEAGUE_SUB_URL = 'http://api.pleagueplus.meetagile.com/rest/gameplayerplaytime/{game_id}/{team_id}'
+PLEAGUE_PLAY_BY_PLAY_URL = 'http://api.pleagueplus.meetagile.com/rest/gamerecord/{game_id}/{team_id}'
 
 REG_FULL_GAME_MINS = 40
 

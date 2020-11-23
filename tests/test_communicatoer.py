@@ -1,5 +1,10 @@
 from fiba_inbounder.communicator import FibaCommunicator
 
+def test_get_game_play_by_play_pleague():
+    result = FibaCommunicator.get_game_play_by_play_pleague(game_id='12', team_id='1')
+    assert result[0]['createDate'] == 1606042017000
+    assert result[0]['eventName'] == 'assist'
+
 def test_get_game_data_v5():
     result = FibaCommunicator.get_game_data_v5(match_id='1143749')
     assert result['tm']['1']['name'] == 'Singapore Slingers'

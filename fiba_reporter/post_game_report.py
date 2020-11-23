@@ -3,10 +3,14 @@
 import pandas as pd
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats, \
+    update_zone, update_zone_pleague, update_range, update_range_stats, update_lineup, get_lineup_stats, \
     get_player_mins_plus_minus
 
 class FibaPostGameReport(object):
+    def _update_shot_zone_range(self):
+        update_zone(self.shot_df)
+        update_range(self.shot_df)
+
     def _gen_period_scores_md(self):
         stats_dict = self.team_stats_df.to_dict(orient='records')
 
@@ -64,12 +68,11 @@ class FibaPostGameReport(object):
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_team_shot_range_md(self):
-        update_zone(self.shot_df)
-        update_range(self.shot_df)
+        self._update_shot_zone_range()
         
         result_str_list = list()
         team_shot_range_df = self.shot_df.sort_values(['ZONE']).groupby(['T1', 'RANGE'], as_index=False, sort=False).sum()
-        
+       
         for t in team_shot_range_df['T1'].unique():
             tsr_df = team_shot_range_df[team_shot_range_df['T1'].str.match(t)]
             update_range_stats(tsr_df)
@@ -151,9 +154,15 @@ class FibaPostGameReportPLeague(FibaPostGameReport):
         self.starter_dict = {self.team_id_away: set(), self.team_id_home: set()}
 
         self.sub_df = FibaGameParser.get_game_sub_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
-        
+
+        self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
+        self.shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
         #self.pbp_df = self.sub_df.sort_values(['GT'], ascending=[True])
         #update_lineup(self.pbp_df, self.starter_dict)
+
+    def _update_shot_zone_range(self):
+        update_zone_pleague(self.shot_df)
+        update_range(self.shot_df)
 
     def _gen_player_stats_md(self):
         mins_pm_df = get_player_mins_plus_minus(self.sub_df, self.team_id_away)
@@ -201,6 +210,7 @@ def main():
         
         print (u'## Scores\n' + r._gen_period_scores_md() + \
             '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
+            '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
             '\n## Advanced Player Stats\n' + r._gen_player_stats_md())
         return
 
