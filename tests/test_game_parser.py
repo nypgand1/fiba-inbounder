@@ -2,7 +2,7 @@
 from fiba_inbounder.game_parser import FibaGameParser
 
 def test_get_game_stats_dataframe_pleague():
-    team_stats_df, player_stats_df, team_id_away, team_id_home = FibaGameParser.get_game_stats_dataframe_pleague(game_id='2')
+    team_stats_df, player_stats_df, team_id_away, team_id_home, id_table = FibaGameParser.get_game_stats_dataframe_pleague(game_id='2')
     stats_dict = team_stats_df.to_dict(orient='records')
     assert stats_dict[0]['Name'] == u'桃園領航猿'
     assert stats_dict[0]['OPP_DR'] == 39
@@ -13,6 +13,9 @@ def test_get_game_stats_dataframe_pleague():
     assert stats_dict[0]['Periods'][3] == {'Id': 'Q4', 'Score': 9}
     assert stats_dict[0]['PeriodIdList'] == ['Q1', 'Q2', 'Q3', 'Q4'] 
     assert stats_dict[1]['TeamCode'] == u'臺北富邦勇士'
+    assert team_id_away == 1
+    assert team_id_home == 2
+    assert id_table[1] == u'賴廷恩'
     
 def test_get_game_stats_dataframe_v5():
     team_stats_df, player_stats_df, starter_dict, pbp_df, shot_df = FibaGameParser.get_game_data_dataframe_v5(match_id='987140')

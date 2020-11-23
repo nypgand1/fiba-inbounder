@@ -12,7 +12,7 @@ def base60_from(time_str):
     num_list = time_str.split(':')
     secs = 0
     for i in num_list:
-        secs = secs * 60 + int(i)
+        secs = secs * 60 + int(float(i))
     return secs
 
 def base60_to(secs):
@@ -96,6 +96,20 @@ def update_player_stats_pleague_to_v7(df):
 
     df['JerseyNumber'] = df['jersey']
     df['Name'] = df['name_alt']
+
+def update_sub_pleague_to_v7(df, team_id_away):
+    df['AC'] = 'SUBST'
+    df['GT'] = df['createDate']
+    #df[''] = df['quarter']
+    df['Time'] = df['time']
+
+    df['C1'] = df['rosterSn']
+    df['SU'] = df['status'].replace(True, '+').replace(False, '-')
+
+    df['T1'] = df['teamSn']
+
+    df['SA'] = np.where(df['T1']==team_id_away, df['teamScore'], df['opponentTeamScore'])
+    df['SB'] = np.where(df['T1']==team_id_away, df['opponentTeamScore'], df['teamScore'])
 
 def update_team_stats_v5_to_v7(df):
     df['AS'] = df['tot_sAssists']
@@ -491,8 +505,8 @@ def get_on_off_stats(df, team_id, id_table=None):
     on_off_df['DEFRTG_OFF'] = on_off_df.apply(lambda x: 0 if x['ON'] else x['DEFRTG'], axis=1)
     on_off_df['SECS_OFF'] = on_off_df.apply(lambda x: 0 if x['ON'] else x['SECS'], axis=1)
     on_off_df['OFFRTG'] = on_off_df.apply(lambda x: x['OFFRTG'] if x['ON'] else 0, axis=1)
-    on_off_df['DEFRTG'] = on_off_df.apply(lambda x: x['DEFRTG'] if x['ON'] else 0,axis=1)
-    on_off_df['SECS'] = on_off_df.apply(lambda x: x['SECS'] if x['ON'] else 0,axis=1)
+    on_off_df['DEFRTG'] = on_off_df.apply(lambda x: x['DEFRTG'] if x['ON'] else 0, axis=1)
+    on_off_df['SECS'] = on_off_df.apply(lambda x: x['SECS'] if x['ON'] else 0, axis=1)
 
     on_off_df['NETRTG'] = on_off_df['OFFRTG'] - on_off_df['DEFRTG']
     on_off_df['NETRTG_OFF'] = on_off_df['OFFRTG_OFF'] - on_off_df['DEFRTG_OFF']
@@ -510,3 +524,17 @@ def get_on_off_stats(df, team_id, id_table=None):
 
     return result_df[['PLAYER_NAME', 'SECS', 'SECS_OFF', 'TP', 'TP_OFF', 'OFFRTG', 'DEFRTG', 'NETRTG', 'OFFRTG_OFF', 'DEFRTG_OFF', 'NETRTG_OFF', 
         'OFFRTG_DIFF', 'DEFRTG_DIFF', 'NETRTG_DIFF', 'OFFRTG_DIFF_STR', 'DEFRTG_DIFF_STR']]
+
+def get_player_mins_plus_minus(df, team_id_away):
+    df['SA_DIFF'] = df.apply(lambda x: -x['SA'] if x['SU']=='+' else x['SA'], axis=1)
+    df['SB_DIFF'] = df.apply(lambda x: -x['SB'] if x['SU']=='+' else x['SB'], axis=1)
+   
+    df['SECS'] = df['Time'].apply(lambda x: base60_from(x))
+    df['SECS_DIFF'] = df.apply(lambda x: x['SECS'] if x['SU']=='+' else -x['SECS'], axis=1)
+
+    result_df = df.groupby(['T1', 'C1'], as_index=False, sort=False).sum()
+    result_df['TP'] = result_df['SECS_DIFF'].apply(lambda x: base60_to(x))
+    result_df['PM'] = np.where(result_df['T1']==team_id_away, result_df['SA_DIFF']-result_df['SB_DIFF'], 
+            result_df['SB_DIFF']-result_df['SA_DIFF'])
+    
+    return result_df[['T1', 'C1', 'TP', 'PM']]

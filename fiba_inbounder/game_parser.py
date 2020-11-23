@@ -6,7 +6,8 @@ from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
         update_secs_v7, update_xy_v7, update_xy_v5, \
         update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
         update_team_stats_v5_to_v7, update_player_stats_v5_to_v7, \
-        update_team_stats_pleague_to_v7, update_player_stats_pleague_to_v7
+        update_team_stats_pleague_to_v7, update_player_stats_pleague_to_v7, \
+        update_sub_pleague_to_v7
 
 class FibaGameParser:
     @staticmethod
@@ -15,6 +16,7 @@ class FibaGameParser:
         game_json = FibaCommunicator.get_game_stats_pleague(game_id)
         team_stats_json = list()
         player_stats_list = list()
+        id_table = dict()
 
         for ha in ['home', 'away']:
             t = game_json[u'team_stats_' + ha]
@@ -40,6 +42,7 @@ class FibaGameParser:
                 p['NumName'] = u'{num} {name}'.format(num=p['JerseyNumber'].zfill(2), name=p['Name'])
         
                 player_stats_list.append(p)
+                id_table[p['player_id']] = p['Name']
 
         team_a_stats_json = team_stats_json[0]
         team_b_stats_json = team_stats_json[1]
@@ -56,7 +59,7 @@ class FibaGameParser:
         update_team_stats_pleague_to_v7(team_stats_df)
         update_player_stats_pleague_to_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df, game_json['away_id'], game_json['home_id']
+        return team_stats_df, player_stats_df, game_json['away_id'], game_json['home_id'], id_table
 
     @staticmethod
     def get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home):
@@ -67,9 +70,8 @@ class FibaGameParser:
             for team_id in [team_id_away, team_id_home]]
 
         df = pd.DataFrame(sum(sub_json_list, []))
-        #TODO: update sub
-        #update_xy_v7(df)
-        #update_pbp_stats_v7(df)
+        update_sub_pleague_to_v7(df, team_id_away)
+        
         return df
 
     @staticmethod

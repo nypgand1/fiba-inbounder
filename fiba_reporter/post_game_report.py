@@ -3,9 +3,10 @@
 import pandas as pd
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats
+    update_zone, update_range, update_range_stats, update_lineup, get_lineup_stats, \
+    get_player_mins_plus_minus
 
-class FibaPostGameReport():
+class FibaPostGameReport(object):
     def _gen_period_scores_md(self):
         stats_dict = self.team_stats_df.to_dict(orient='records')
 
@@ -98,7 +99,7 @@ class FibaPostGameReport():
             update_efg(ps_df)
             update_usg(ps_df)
             ps_df = ps_df.sort_values(['PM', 'SECS', 'EFG', 'USG'], ascending=[False, True, False, True])
-            
+         
             if t in self.id_table.keys():
                 result_str_list.append(self.id_table[t])
             else:
@@ -121,6 +122,9 @@ class FibaPostGameReport():
         for t in self.pbp_df['T1'].unique():
             if (not t) or pd.isna(t):
                 continue
+            print t
+            print self.pbp_df['T1']
+            print self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
             team_lineup_df = self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
             tls_df = get_lineup_stats(team_lineup_df, t, self.id_table)
             tls_df = tls_df.sort_values(['NETRTG', 'PM', 'EFG'], ascending=[False, False, False])
@@ -143,10 +147,19 @@ class FibaPostGameReport():
 
 class FibaPostGameReportPLeague(FibaPostGameReport):
     def __init__(self, game_id):
-        self.team_stats_df, self.player_stats_df, team_id_away, team_id_home = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
-        self.id_table = dict()
+        self.team_stats_df, self.player_stats_df, self.team_id_away, self.team_id_home, self.id_table = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
+        self.starter_dict = {self.team_id_away: set(), self.team_id_home: set()}
 
-        sub_df = FibaGameParser.get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home)
+        self.sub_df = FibaGameParser.get_game_sub_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
+        
+        #self.pbp_df = self.sub_df.sort_values(['GT'], ascending=[True])
+        #update_lineup(self.pbp_df, self.starter_dict)
+
+    def _gen_player_stats_md(self):
+        mins_pm_df = get_player_mins_plus_minus(self.sub_df, self.team_id_away)
+        self.player_stats_df = self.player_stats_df.join(mins_pm_df.set_index('C1'), on='player_id', how='inner', lsuffix='_pl')
+
+        return super(FibaPostGameReportPLeague, self)._gen_player_stats_md()
 
 class FibaPostGameReportV5(FibaPostGameReport):
     def __init__(self, match_id):
@@ -186,7 +199,7 @@ def main():
         game_id = raw_input('Game Id? ')
         r = FibaPostGameReportPLeague(str(game_id))
         
-        print ('## Scores\n' + r._gen_period_scores_md() + \
+        print (u'## Scores\n' + r._gen_period_scores_md() + \
             '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
             '\n## Advanced Player Stats\n' + r._gen_player_stats_md())
         return
