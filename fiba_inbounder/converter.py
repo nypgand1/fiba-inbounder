@@ -192,7 +192,7 @@ def convert_sub_pleague_to_v7(df, team_id_away):
 
     df['PTS'] = 0
 
-def convert_pbp_stats_pleague_to_v7(df):
+def convert_pbp_stats_pleague_to_v7(df, team_id_away, team_id_home):
     #TODO: Still Lots of Stats
     df['AC'] = np.where((df['eventName']=='miss') | (df['eventName']=='score'),
             np.where(df['eventValue']==2, 'P2',
@@ -205,8 +205,8 @@ def convert_pbp_stats_pleague_to_v7(df):
 
     df['C1'] = df['rosterSn']
     df['T1'] = df['teamSn'].apply(lambda x: 't' + str(x))
-    #df['OppTeamCode'] = np.where(df['tno']==1, tb_code,
-    #        np.where(df['tno']==2, ta_code, None))
+    df['OppTeamCode'] = np.where(df['T1']==team_id_away, team_id_home,
+            np.where(df['T1']==team_id_home, team_id_away, None))
     
     df['FG2M'] = df.apply(lambda x: 1 if x['AC']=='P2' and x['eventName']=='score' else 0, axis=1)
     df['FG3M'] = df.apply(lambda x: 1 if x['AC']=='P3' and x['eventName']=='score' else 0, axis=1)

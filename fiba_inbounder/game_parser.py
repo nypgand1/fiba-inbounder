@@ -97,7 +97,7 @@ class FibaGameParser:
             for team_id in [team_id_away.replace('t', ''), team_id_home.replace('t', '')]]
 
         df = pd.DataFrame(sum(pbp_json_list, []))
-        convert_pbp_stats_pleague_to_v7(df)
+        convert_pbp_stats_pleague_to_v7(df, team_id_away, team_id_home)
 
         return df
 
