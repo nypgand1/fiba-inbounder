@@ -2,12 +2,12 @@
 import pandas as pd
 import fiba_inbounder.formulas
 from fiba_inbounder.communicator import FibaCommunicator
-from fiba_inbounder.formulas import game_time, base60_from, base60_to, \
-        update_secs_v7, update_xy_v7, update_xy_v5, \
-        update_pbp_stats_v7, update_pbp_stats_v5_to_v7, \
-        update_team_stats_v5_to_v7, update_player_stats_v5_to_v7, \
-        update_team_stats_pleague_to_v7, update_player_stats_pleague_to_v7, \
-        update_sub_pleague_to_v7, update_pbp_stats_pleague_to_v7
+from fiba_inbounder.converter import game_time, base60_from, base60_to, \
+        convert_team_stats_v5_to_v7, convert_player_stats_v5_to_v7, \
+        convert_team_stats_pleague_to_v7, convert_player_stats_pleague_to_v7, \
+        convert_secs_v7, convert_xy_v7, convert_xy_v5, \
+        convert_pbp_stats_v7, convert_pbp_stats_v5_to_v7, \
+        convert_sub_pleague_to_v7, convert_pbp_stats_pleague_to_v7
 
 class FibaGameParser:
     @staticmethod
@@ -44,7 +44,7 @@ class FibaGameParser:
                 p['NumName'] = u'{num} {name}'.format(num=p['JerseyNumber'].zfill(2), name=p['Name'])
         
                 player_stats_list.append(p)
-                id_table[p['player_id']] = p['Name']
+                id_table[p['player_id']] = p['NumName']
 
         team_a_stats_json = team_stats_json[0]
         team_b_stats_json = team_stats_json[1]
@@ -58,10 +58,10 @@ class FibaGameParser:
 
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
         player_stats_df = pd.DataFrame(player_stats_list)
-        update_team_stats_pleague_to_v7(team_stats_df)
-        update_player_stats_pleague_to_v7(player_stats_df)
+        convert_team_stats_pleague_to_v7(team_stats_df)
+        convert_player_stats_pleague_to_v7(player_stats_df)
 
-        return team_stats_df, player_stats_df, str(game_json['away_id']), str(game_json['home_id']), id_table
+        return team_stats_df, player_stats_df, 't' + str(game_json['away_id']), 't' + str(game_json['home_id']), id_table
 
     @staticmethod
     def get_game_sub_dataframe_pleague(game_id, team_id_away, team_id_home):
@@ -69,11 +69,23 @@ class FibaGameParser:
         
         sub_json_list = [
             FibaCommunicator.get_game_sub_pleague(game_id, team_id)
-            for team_id in [team_id_away, team_id_home]]
+            for team_id in [team_id_away.replace('t', ''), team_id_home.replace('t', '')]]
 
-        df = pd.DataFrame(sum(sub_json_list, []))
-        update_sub_pleague_to_v7(df, team_id_away)
-        
+        df = pd.DataFrame(sum(sub_json_list, [])).sort_values(['createDate'], ascending=[True])
+        convert_sub_pleague_to_v7(df, team_id_away)
+ 
+        sub_dict = df.to_dict(orient='records')
+        endp_index = [i+1 for i, s in enumerate(sub_dict) if i+1 == len(sub_dict) or s['quarter'] != sub_dict[i+1]['quarter']]
+
+        for i in reversed(endp_index):
+            sub_dict.insert(i, {'AC': 'ENDP', 
+                'GT': sub_dict[i-1]['GT'] + 1,
+                'Time': sub_dict[i-1]['Time'],
+                'SA': sub_dict[i-1]['SA'],
+                'SB': sub_dict[i-1]['SB'],
+                'PTS': 0})
+        df = pd.DataFrame(sub_dict)
+       
         return df
 
     @staticmethod
@@ -82,10 +94,10 @@ class FibaGameParser:
         
         pbp_json_list = [
             FibaCommunicator.get_game_play_by_play_pleague(game_id, team_id)
-            for team_id in [team_id_away, team_id_home]]
+            for team_id in [team_id_away.replace('t', ''), team_id_home.replace('t', '')]]
 
         df = pd.DataFrame(sum(pbp_json_list, []))
-        update_pbp_stats_pleague_to_v7(df)
+        convert_pbp_stats_pleague_to_v7(df)
 
         return df
 
@@ -131,18 +143,18 @@ class FibaGameParser:
 
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
         player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
-        update_team_stats_v5_to_v7(team_stats_df)
-        update_player_stats_v5_to_v7(player_stats_df)
+        convert_team_stats_v5_to_v7(team_stats_df)
+        convert_player_stats_v5_to_v7(player_stats_df)
 
         starter_dict = {t['TeamCode']: {p['NumName'] for p in t['pl'].values() if p['starter'] == 1} 
                 for t in team_stats_json.values()}
 
         pbp_df = pd.DataFrame(reversed(game_json['pbp']))
-        update_pbp_stats_v5_to_v7(pbp_df, team_a_stats_json['TeamCode'], team_b_stats_json['TeamCode'])
+        convert_pbp_stats_v5_to_v7(pbp_df, team_a_stats_json['TeamCode'], team_b_stats_json['TeamCode'])
 
         shot_df = pd.DataFrame(sum([t['shot'] for t in team_stats_json.values()], [])) 
-        update_pbp_stats_v5_to_v7(shot_df, team_a_stats_json['TeamCode'], team_b_stats_json['TeamCode'])
-        update_xy_v5(shot_df)
+        convert_pbp_stats_v5_to_v7(shot_df, team_a_stats_json['TeamCode'], team_b_stats_json['TeamCode'])
+        convert_xy_v5(shot_df)
 
         return team_stats_df, player_stats_df, starter_dict, pbp_df, shot_df
 
@@ -183,7 +195,7 @@ class FibaGameParser:
         
         team_stats_df = pd.DataFrame([team_a_stats_json, team_b_stats_json])
         player_stats_df = pd.DataFrame(team_a_player_stats_list + team_b_player_stats_list)
-        update_secs_v7(player_stats_df)
+        convert_secs_v7(player_stats_df)
 
         return team_stats_df, player_stats_df
 
@@ -195,8 +207,8 @@ class FibaGameParser:
             for p in period_id_list]
 
         df = pd.DataFrame(sum(pbp_json_list, []))
-        update_xy_v7(df)
-        update_pbp_stats_v7(df)
+        convert_xy_v7(df)
+        convert_pbp_stats_v7(df)
         return df
 
     @staticmethod

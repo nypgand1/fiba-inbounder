@@ -3,8 +3,8 @@
 import pandas as pd
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_zone_pleague, update_range, update_range_stats, update_lineup, get_lineup_stats, \
-    get_player_mins_plus_minus
+    update_zone, update_zone_pleague, update_range, update_range_stats, update_lineup, \
+    get_lineup_stats, get_player_mins_plus_minus
 
 class FibaPostGameReport(object):
     def _update_shot_zone_range(self):
@@ -125,9 +125,6 @@ class FibaPostGameReport(object):
         for t in self.pbp_df['T1'].unique():
             if (not t) or pd.isna(t):
                 continue
-            print t
-            print self.pbp_df['T1']
-            print self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
             team_lineup_df = self.pbp_df.groupby(['T1', t], as_index=False, sort=False).sum()
             tls_df = get_lineup_stats(team_lineup_df, t, self.id_table)
             tls_df = tls_df.sort_values(['NETRTG', 'PM', 'EFG'], ascending=[False, False, False])
@@ -138,13 +135,13 @@ class FibaPostGameReport(object):
                 result_str_list.append(t)
             result_str_list.append('| Lineups | Mins | Pace | +/- | eFG% | TO Ratio | A/T | OffRtg | DefRtg | NetRtg |')
             result_str_list.append('|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
-            result_str_list.append('|' + tls_df[['LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']].to_csv(
+            result_str_list.append(('|' + tls_df[['LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']].to_csv(
                 sep='|',
                 line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2])
+                index=False)[:-2]).decode('utf-8'))
  
         return '\n'.join(result_str_list) + '\n'
 
@@ -154,15 +151,18 @@ class FibaPostGameReportPLeague(FibaPostGameReport):
         self.starter_dict = {self.team_id_away: set(), self.team_id_home: set()}
 
         self.sub_df = FibaGameParser.get_game_sub_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
-
-        self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
-        self.shot_df = self.pbp_df[(self.pbp_df['AC']=='P3') | (self.pbp_df['AC']=='P2')]
-        #self.pbp_df = self.sub_df.sort_values(['GT'], ascending=[True])
-        #update_lineup(self.pbp_df, self.starter_dict)
+        pbp_df = FibaGameParser.get_game_play_by_play_dataframe_pleague(game_id, self.team_id_away, self.team_id_home)
+        self.shot_df = pbp_df[(pbp_df['AC']=='P3') | (pbp_df['AC']=='P2')]
+        
+        self.pbp_df = pd.concat([self.sub_df, pbp_df]).sort_values(['GT'], ascending=[True]).reset_index(drop=True)
+        update_lineup(self.pbp_df, self.starter_dict)
 
     def _update_shot_zone_range(self):
         update_zone_pleague(self.shot_df)
         update_range(self.shot_df)
+
+    def _gen_key_stats_md(self):
+        return 'NOT SUPPORT YET\n'
 
     def _gen_player_stats_md(self):
         mins_pm_df = get_player_mins_plus_minus(self.sub_df, self.team_id_away)
@@ -192,6 +192,11 @@ class FibaPostGameReportV7(FibaPostGameReport):
         if all([len(s)==5 for s in self.starter_dict.itervalues()]):
             update_lineup(self.pbp_df, self.starter_dict)
 
+try: 
+    input = raw_input
+except NameError: 
+    raw_input = input
+
 def main():
     version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(9) P League\n')
 
@@ -207,11 +212,9 @@ def main():
     elif str(version) == '9':
         game_id = raw_input('Game Id? ')
         r = FibaPostGameReportPLeague(str(game_id))
-        
-        print (u'## Scores\n' + r._gen_period_scores_md() + \
-            '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \
-            '\n## Shot Analysis\n' + r._gen_team_shot_range_md() + \
-            '\n## Advanced Player Stats\n' + r._gen_player_stats_md())
+
+    else:
+        print 'NOT SUPPORT\n'
         return
 
     print (u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \

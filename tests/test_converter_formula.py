@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from fiba_inbounder.formulas import update_xy_v7, update_pbp_stats_v7, \
-        update_xy_v5, update_pbp_stats_v5_to_v7, \
-        update_zone, update_range, update_lineup
+from fiba_inbounder.converter import convert_xy_v7, convert_pbp_stats_v7, \
+        convert_xy_v5, convert_pbp_stats_v5_to_v7
+from fiba_inbounder.formulas import update_zone, update_range, update_lineup
 from actions_sample import sample
 
 ac_df = pd.DataFrame([
@@ -44,8 +44,8 @@ shot_df = pd.DataFrame([
     ])
 
 def test_update_shot_v5():
-    update_pbp_stats_v5_to_v7(shot_df, 'FMD', 'FUB')
-    update_xy_v5(shot_df)
+    convert_pbp_stats_v5_to_v7(shot_df, 'FMD', 'FUB')
+    convert_xy_v5(shot_df)
     update_zone(shot_df)
     update_range(shot_df)
 
@@ -53,14 +53,14 @@ def test_update_shot_v5():
     assert shot_dict[0]['ZONE'] == 11
     assert shot_dict[1]['ZONE'] == 4
 
-def test_update_xy_v7():
-    update_xy_v7(ac_df)
+def test_convert_xy_v7():
+    convert_xy_v7(ac_df)
     ac_dict = ac_df.to_dict(orient='records')
     assert ac_dict[0]['X_SIDELINE_M'] == 7.5
     assert ac_dict[0]['Y_BASELINE_M'] == 1.575
 
-def test_update_pbp_stats_v7():
-    update_pbp_stats_v7(ac_df)
+def test_convert_pbp_stats_v7():
+    convert_pbp_stats_v7(ac_df)
     ac_dict = ac_df.to_dict(orient='records')
     assert ac_dict[15]['OR'] == 1
     assert ac_dict[16]['DR'] == 1
