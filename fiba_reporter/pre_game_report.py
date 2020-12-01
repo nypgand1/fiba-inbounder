@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from fiba_reporter.post_game_report import FibaPostGameReportV5
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportPLeague
 from fiba_inbounder.formulas import update_four_factors, update_efg, update_usg, \
-        update_team_avg, update_player_avg
+        update_team_avg, update_team_key_stats_avg, update_player_avg
         
 class FibaPreGameReport():
     def _gen_four_factors_md(self):
@@ -18,7 +18,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         update_four_factors(opp_team_avg_stats_df)
@@ -31,7 +31,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         rank_header_str_list = '| Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
         rank_align_str_list = '|:---:|---:|---:|---:|---:|---:|'
@@ -41,7 +41,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%d',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
         
         result_str_list = [header_str_list, align_str_list, table_str, '',
                 opp_header_str_list, opp_align_str_list, opp_table_str, '',
@@ -61,7 +61,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         update_team_avg(opp_team_avg_stats_df)
@@ -75,7 +75,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         rank_header_str_list = '| Team | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
         rank_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
@@ -86,7 +86,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%d',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
 
         result_str_list = [header_str_list, align_str_list, table_str, '',
                 opp_header_str_list, opp_align_str_list, opp_table_str, '',
@@ -106,7 +106,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         header_str_list = '| Team | Opp Team | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
         align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
@@ -117,7 +117,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         result_str_list = [adv_header_str_list, adv_align_str_list, adv_table_str, '',
                 header_str_list, align_str_list, table_str]
@@ -125,7 +125,7 @@ class FibaPreGameReport():
 
     def _gen_key_stats_md(self):
         team_avg_stats_df = self.team_stats_df.groupby(['TeamCode'], as_index=False, sort=False).mean()
-        update_team_avg(team_avg_stats_df)
+        update_team_key_stats_avg(team_avg_stats_df)
         
         header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
         align_str_list = '|:---:|---:|---:|---:|---:|---:|'
@@ -135,7 +135,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         
@@ -147,7 +147,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         rank_header_str_list = '| Team | FB | 2nd | Off TO | Paint | Bench |'
         rank_align_str_list = '|:---:|---:|---:|---:|---:|---:|'
@@ -157,7 +157,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%d',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         h2h_avg_stats_df = self.team_stats_df.groupby(['TeamCode', 'OppTeamCode'], as_index=False, sort=False).mean()
         update_team_avg(h2h_avg_stats_df)
@@ -170,7 +170,7 @@ class FibaPreGameReport():
             header=False,
             float_format='%.1f',
             encoding='utf-8',
-            index=False)[:-2]
+            index=False)[:-2].decode('utf-8')
  
         result_str_list = [header_str_list, align_str_list, table_str, '',
                 opp_header_str_list, opp_align_str_list, opp_table_str, '',
@@ -199,7 +199,7 @@ class FibaPreGameReport():
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2]
+                index=False)[:-2].decode('utf-8')
          
             ps_df = ps_df.sort_values(['FG3P', 'FG3M'], ascending=[False, False])
             trey_header_str_list = '| # | Name | GP | Mins | 3PTM/3PTA | 3PT% |'
@@ -210,7 +210,7 @@ class FibaPreGameReport():
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2]
+                index=False)[:-2].decode('utf-8')
  
             ps_df = ps_df.sort_values(['REB', 'OR'], ascending=[False, False])
             reb_header_str_list = '| # | Name | GP | Mins | OREB | REB |'
@@ -221,7 +221,7 @@ class FibaPreGameReport():
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2]
+                index=False)[:-2].decode('utf-8')
  
             ps_df = ps_df.sort_values(['FTP', 'FTA'], ascending=[True, False])
             ft_header_str_list = '| # | Name | GP | Mins | FTM/A | FT% |'
@@ -232,7 +232,7 @@ class FibaPreGameReport():
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2]
+                index=False)[:-2].decode('utf-8')
  
             t_result_str_list = [t, '### Scorers', header_str_list, align_str_list, table_str,
                     '### Shooters', trey_header_str_list, trey_align_str_list, trey_table_str,
@@ -249,8 +249,17 @@ class FibaPreGameReportV5(FibaPreGameReport):
         self.team_stats_df = pd.concat([r.team_stats_df for r in r_list], sort=False)
         self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
 
+class FibaPreGameReportPLeague(FibaPreGameReport):
+    def __init__(self, game_id_list):
+        r_list = [FibaPostGameReportPLeague(game_id) for game_id in game_id_list]
+        self.team_stats_df = pd.concat([r.team_stats_df for r in r_list], sort=False)
+        self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
+
+    def _gen_key_stats_md(self):
+        return 'NOT SUPPORT YET\n'
+
 def main():
-    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(9) P League\n')
     num_games = raw_input('How Many Games? ')
     game_id_list = list()
 
@@ -261,7 +270,14 @@ def main():
             game_id_list.append(str(match_id))
         r = FibaPreGameReportV5(game_id_list)
 
-    print ('## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
+    elif int(version) == 9:
+        for g in range(int(num_games)):
+            print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
+            game_id = raw_input('\tGame ID? ')
+            game_id_list.append(str(game_id))
+        r = FibaPreGameReportPLeague(game_id_list)
+
+    print (u'## Pace & Four Factors\n' + r._gen_four_factors_md() + '\n## Traditional Stats\n' + r._gen_team_avg_md() + \
             '\n## H2H Stats\n' + r._gen_h2h_md() + '\n## Key Stats\n' + r._gen_key_stats_md() + \
             '\n## Player Stats\n' + r._gen_player_stats_md())
 

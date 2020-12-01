@@ -20,8 +20,7 @@ def update_team_avg(df):
     
     for col in ['FG2M', 'FG2A', 'FG2P', 'FG3M', 'FG3A', 'FG3P', 'FTM', 'FTA', 'FTP', 
             'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
-            'FGM', 'FGA', 'FGP',
-            'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']:
+            'FGM', 'FGA', 'FGP']:
         if col in ['TO', 'PF']:
             df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=True)
         else:
@@ -33,6 +32,10 @@ def update_team_avg(df):
             x['{col}M'.format(col=col)], x['{col}A'.format(col=col)]), axis=1)
         df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
             x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
+
+def update_team_key_stats_avg(df):
+    for col in ['A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']:
+        df['{col}_RANK'.format(col=col)] = df[col].rank(ascending=False)
 
 def update_player_avg(df):
     df['TP'] = df['SECS'].apply(lambda x: base60_to(x))
