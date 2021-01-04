@@ -64,7 +64,7 @@ class FibaPostGameReport(object):
             encoding='utf-8',
             index=False)[:-2]
  
-        result_str_list = [header_str_list, align_str_list, table_str]
+        result_str_list = [header_str_list, align_str_list, table_str.decode('utf-8')]
         return '\n'.join(result_str_list) + '\n'
 
     def _gen_team_shot_range_md(self):
@@ -161,9 +161,6 @@ class FibaPostGameReportPLeague(FibaPostGameReport):
         update_zone_pleague(self.shot_df)
         update_range(self.shot_df)
 
-    def _gen_key_stats_md(self):
-        return 'NOT SUPPORT YET\n'
-
     def _gen_player_stats_md(self):
         mins_pm_df = get_player_mins_plus_minus(self.sub_df, self.team_id_away)
         self.player_stats_df = self.player_stats_df.join(mins_pm_df.set_index('C1'), on='player_id', how='inner', lsuffix='_pl')
@@ -214,7 +211,7 @@ def main():
         r = FibaPostGameReportPLeague(str(game_id))
 
     else:
-        print 'NOT SUPPORT\n'
+        print ('NOT SUPPORT\n')
         return
 
     print (u'## Scores\n' + r._gen_period_scores_md() + '\n## Pace & Four Factors\n' + r._gen_four_factors_md() + \

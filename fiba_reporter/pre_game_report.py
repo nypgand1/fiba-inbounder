@@ -23,7 +23,7 @@ class FibaPreGameReport():
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         update_four_factors(opp_team_avg_stats_df)
         
-        opp_header_str_list = '| Opp Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
+        opp_header_str_list = '| Opp | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
         opp_align_str_list = '|:---:|---:|---:|---:|---:|---:|'
         opp_table_str = '|' + opp_team_avg_stats_df[['OppTeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
             sep='|',
@@ -66,7 +66,7 @@ class FibaPreGameReport():
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         update_team_avg(opp_team_avg_stats_df)
 
-        opp_header_str_list = '| Opp Team | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
+        opp_header_str_list = '| Opp | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
         opp_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
         opp_table_str = '|' + opp_team_avg_stats_df[['OppTeamCode', 'FG2MA_STR', 'FG2P_STR', 'FG3MA_STR', 'FG3P_STR', 'FTMA_STR', 'FTP_STR', 
             'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS']].to_csv(
@@ -98,7 +98,7 @@ class FibaPreGameReport():
         update_four_factors(h2h_avg_stats_df)
         update_team_avg(h2h_avg_stats_df)
 
-        adv_header_str_list = '| Team | Opp Team | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
+        adv_header_str_list = '| Team | Opp | Pace | eFG% | TO Ratio | OREB% | FT Rate |'
         adv_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|'
         adv_table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'PACE', 'EFG_STR', 'TO_RATIO_STR', 'OR_PCT_STR', 'FT_RATE_STR']].to_csv(
             sep='|',
@@ -108,7 +108,7 @@ class FibaPreGameReport():
             encoding='utf-8',
             index=False)[:-2].decode('utf-8')
  
-        header_str_list = '| Team | Opp Team | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
+        header_str_list = '| Team | Opp | 2PTM/A | 2PT% | 3PTM/A | 3PT% | FTM/A | FT% | OREB | DREB | REB | AST | STL | BLK | TOV | PF | PTS |'
         align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'
         table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'FG2MA_STR', 'FG2P_STR', 'FG3MA_STR', 'FG3P_STR', 'FTMA_STR', 'FTP_STR', 
             'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS']].to_csv(
@@ -139,7 +139,7 @@ class FibaPreGameReport():
  
         opp_team_avg_stats_df = self.team_stats_df.groupby(['OppTeamCode'], as_index=False, sort=False).mean()
         
-        opp_header_str_list = '| Opp Team | FB | 2nd | Off TO | Paint | Bench |'
+        opp_header_str_list = '| Opp | FB | 2nd | Off TO | Paint | Bench |'
         opp_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|'
         opp_table_str = '|' + opp_team_avg_stats_df[['OppTeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
             sep='|',
@@ -162,7 +162,7 @@ class FibaPreGameReport():
         h2h_avg_stats_df = self.team_stats_df.groupby(['TeamCode', 'OppTeamCode'], as_index=False, sort=False).mean()
         update_team_avg(h2h_avg_stats_df)
 
-        h2h_header_str_list = '| Team | Opp Team | FB | 2nd | Off TO | Paint | Bench |'
+        h2h_header_str_list = '| Team | Opp | FB | 2nd | Off TO | Paint | Bench |'
         h2h_align_str_list = '|:---:|---:|---:|---:|---:|---:|---:|---:|'
         h2h_table_str = '|' + h2h_avg_stats_df[['TeamCode', 'OppTeamCode', 'A_FBP', 'A_SCP', 'A_PAT', 'A_PIP', 'A_PFB']].to_csv(
             sep='|',
@@ -254,9 +254,6 @@ class FibaPreGameReportPLeague(FibaPreGameReport):
         r_list = [FibaPostGameReportPLeague(game_id) for game_id in game_id_list]
         self.team_stats_df = pd.concat([r.team_stats_df for r in r_list], sort=False)
         self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
-
-    def _gen_key_stats_md(self):
-        return 'NOT SUPPORT YET\n'
 
 def main():
     version = raw_input('fiba stats version?\n\t(5) v5\n\t(9) P League\n')

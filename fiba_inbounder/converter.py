@@ -52,14 +52,11 @@ def convert_team_stats_pleague_to_v7(df):
     df['FGA'] = df['FG2A'] + df['FG3A']
     df['FGM'] = df['FG2M'] + df['FG3M']
     
-    #TODO
-    '''
-    df['A_FBP'] = df['tot_sPointsFastBreak']
-    df['A_SCP'] = df['tot_sPointsSecondChance']
-    df['A_PAT'] = df['tot_sPointsFromTurnovers']
-    df['A_PIP'] = df['tot_sPointsInThePaint']
-    df['A_PFB'] = df['tot_sBenchPoints']
-    '''
+    df['A_FBP'] = df['fast_break_score'].replace(np.nan, 0)
+    df['A_SCP'] = df['second_chance_score'].replace(np.nan, 0) 
+    df['A_PAT'] = df['from_turnover_score'].replace(np.nan, 0) 
+    df['A_PIP'] = df['points_in_paint'].replace(np.nan, 0) 
+    df['A_PFB'] = df['bench_points'].replace(np.nan, 0) 
 
 def convert_player_stats_pleague_to_v7(df):
     df['AS'] = df['ast']

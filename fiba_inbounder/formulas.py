@@ -163,7 +163,12 @@ def update_zone(df):
             None))
 
 def update_zone_pleague(df):
-    df['ZONE'] = df.apply(lambda x: 14-x['scoringArea'], axis=1)
+    zone_map = {1: 9, 2: 10, 3: 11, 4: 12, 5: 13,
+        6: 4, 7: 5, 8: 6, 9: 7, 10: 8,
+        11: 1, 12: 2, 13: 3,
+        14: 0, 
+        0: 14}
+    df['ZONE'] = df.apply(lambda x: zone_map[x['scoringArea']], axis=1)
 
 def update_range(df):
     df['RANGE'] = np.where(df['ZONE']==0, 
