@@ -202,7 +202,7 @@ def update_lineup(df, starter_dict):
         for t in starter_dict.keys():
             pbp_dict[i][t] = pbp_dict[i-1][t].copy()
         
-        if pbp_dict[i-1]['AC'] == 'SUBST':
+        if pbp_dict[i-1]['AC'] == 'SUBST': 
             t = pbp_dict[i-1]['T1']
             if pbp_dict[i-1]['SU'] == '+':
                 pbp_dict[i][t].add(pbp_dict[i-1]['C1'])

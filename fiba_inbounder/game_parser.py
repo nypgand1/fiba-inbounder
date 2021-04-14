@@ -37,7 +37,7 @@ class FibaGameParser:
             id_table['t' + str(game_json[ha + '_id'])] = t['TeamCode']
 
             #Player Stats
-            for p in game_json['player_stats_' + ha]:
+            for p in game_json['player_stats_' + ha]['total']:
                 p['TeamCode'] = t['Name']
                 p['JerseyNumber'] = p['jersey']
                 p['Name']  = p['name_alt']

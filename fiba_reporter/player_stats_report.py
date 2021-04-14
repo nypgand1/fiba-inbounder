@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from fiba_reporter.post_game_report import FibaPostGameReportV5
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportPLeague
 from fiba_inbounder.formulas import update_efg, update_usg, update_player_avg, update_player_per30
 
 class FibaPlayerStatsReport():
@@ -57,7 +57,7 @@ class FibaPlayerStatsReport():
                 encoding='utf-8',
                 index=False)[:-2]
  
-            t_result_str_list = [t, header_str_list, align_str_list, table_str]
+            t_result_str_list = [t, header_str_list, align_str_list, table_str.decode('utf-8')]
             result_str_list.append('\n'.join(t_result_str_list))
 
         return '\n'.join(result_str_list) + '\n'
@@ -102,8 +102,13 @@ class FibaPlayerStatsReportV5(FibaPlayerStatsReport):
         r_list = [FibaPostGameReportV5(match_id) for match_id in game_id_list]
         self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
 
+class FibaPlayerStatsReportPLeague(FibaPlayerStatsReport):
+    def __init__(self, game_id_list):
+        r_list = [FibaPostGameReportPLeague(game_id) for game_id in game_id_list]
+        self.player_stats_df = pd.concat([r.player_stats_df for r in r_list], sort=False)
+
 def main():
-    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(9) P League\n')
     output_format = raw_input('Which format?\n\t(M)arkdown\n\t(C)SV\n')
     avg_format = raw_input('What scope?\n\t(A)verage\n\t(P)er 30\n')
     num_games = raw_input('How Many Games? ')
@@ -115,6 +120,13 @@ def main():
             match_id = raw_input('\tMatch Id? ')
             game_id_list.append(str(match_id))
         r = FibaPlayerStatsReportV5(game_id_list)
+
+    elif int(version) == 9:
+        for g in range(int(num_games)):
+            print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
+            game_id = raw_input('\tGame ID? ')
+            game_id_list.append(str(game_id))
+        r = FibaPlayerStatsReportPLeague(game_id_list)
 
     if str(output_format).lower() == 'm':
         print '## Player Stats\n' + r._gen_player_avg_md()
