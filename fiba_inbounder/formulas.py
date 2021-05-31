@@ -60,12 +60,13 @@ def update_player_avg(df):
         df['{col}MA_RANK'.format(col=col)] = df.apply(lambda x: '%d/%d' % (
             x['{col}M_RANK'.format(col=col)], x['{col}A_RANK'.format(col=col)]), axis=1)
 
-def update_player_per30(df):
-    df['MULTI'] = 30 * 60 / df['SECS']
-    for col in ['FG2M', 'FG2A', 'FG3M', 'FG3A', 'FTM', 'FTA', 
+def update_player_per36(df):
+    df['MULTI'] = 36.0 * 60 / df['SECS']
+    for col in ['SECS', 'FG2M', 'FG2A', 'FG3M', 'FG3A', 'FTM', 'FTA', 
             'OR', 'DR', 'REB', 'AS', 'ST', 'BS', 'TO', 'PF', 'PTS',
             'FGM', 'FGA']:
         df[col] = df[col] * df['MULTI']
+    update_player_avg(df)
 
 def update_efg(df):
     df['EFG']= 100 * (((1.5*df['FG3M'] + df['FG2M']) / df['FGA']).replace(np.nan, 0))
