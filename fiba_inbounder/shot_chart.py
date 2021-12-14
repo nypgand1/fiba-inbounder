@@ -4,7 +4,7 @@ import cairosvg
 import pandas as pd
 import numpy as np
 
-from settings import SHOT_CHART_BACKGROUND, SHOT_CHART_ZONE_GEO, SHOT_CHART_PERC_RED
+from fiba_inbounder.settings import SHOT_CHART_BACKGROUND, SHOT_CHART_ZONE_GEO, SHOT_CHART_PERC_RED
 
 class Zone():
     def __init__(self, chart, zid, name, points=[], center=(0, 0), made=0, attempt=0, fga=0):

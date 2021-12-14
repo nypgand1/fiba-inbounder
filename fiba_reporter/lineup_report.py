@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7
+from fiba_reporter.post_game_report import FibaPostGameReportV5, FibaPostGameReportV7, FibaPostGameReportPLeague
 from fiba_inbounder.formulas import get_lineup_stats, get_on_off_stats
 
 class FibaLineupReport():
@@ -26,13 +26,13 @@ class FibaLineupReport():
                 result_str_list.append(t)
             result_str_list.append('| Lineups | Mins | Pace | +/- | eFG% | TO Ratio | A/T | OffRtg | DefRtg | NetRtg |')
             result_str_list.append('|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
-            result_str_list.append('|' + tls_df[['LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']].to_csv(
+            result_str_list.append(('|' + tls_df[['LINEUP_NAME', 'TP', 'PACE', 'PM', 'EFG_STR', 'TO_RATIO_STR', 'A/T_STR', 'OFFRTG', 'DEFRTG', 'NETRTG']].to_csv(
                 sep='|',
                 line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2])
+                index=False)[:-2]).decode('utf-8'))
  
         return '\n'.join(result_str_list) + '\n'
 
@@ -63,13 +63,13 @@ class FibaLineupReport():
                 result_str_list.append(t)
             result_str_list.append('| PLAYER | Mins | OffRtg | DefRtg | NetRtg | OffRtg (Diff) | DefRtg (Diff) | NetRtg (Diff)|')
             result_str_list.append('|:---|---:|---:|---:|---:|---:|---:|---:|')
-            result_str_list.append('|' + team_on_off_df[['PLAYER_NAME', 'TP', 'OFFRTG', 'DEFRTG', 'NETRTG', 'OFFRTG_DIFF_STR', 'DEFRTG_DIFF_STR', 'NETRTG_DIFF']].to_csv(
+            result_str_list.append(('|' + team_on_off_df[['PLAYER_NAME', 'TP', 'OFFRTG', 'DEFRTG', 'NETRTG', 'OFFRTG_DIFF_STR', 'DEFRTG_DIFF_STR', 'NETRTG_DIFF']].to_csv(
                 sep='|',
                 line_terminator='|\n|',
                 header=False,
                 float_format='%.1f',
                 encoding='utf-8',
-                index=False)[:-2])
+                index=False)[:-2]).decode('utf-8'))
  
         return '\n'.join(result_str_list) + '\n'
 
@@ -85,8 +85,14 @@ class FibaLineupReportV7(FibaLineupReport):
         self.pbp_df = pd.concat([r.pbp_df for r in r_list], sort=False)
         self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
 
+class FibaLineupReportPLeague(FibaLineupReport):
+    def __init__(self, game_id_list):
+        r_list = [FibaPostGameReportPLeague(game_id) for game_id in game_id_list]
+        self.pbp_df = pd.concat([r.pbp_df for r in r_list], sort=False)
+        self.id_table = {k: v for r in r_list for k, v in r.id_table.iteritems()}
+
 def main():
-    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(9) P League\n')
     secs_above = raw_input('How Many Secs above in Lineup Stats? ')
     num_games = raw_input('How Many Games? ')
     game_id_list = list()
@@ -105,6 +111,17 @@ def main():
             game_unit = raw_input('\tGame Unit? ')
             game_id_list.append((str(event_id), str(game_unit)))
         r = FibaLineupReportV7(game_id_list)
+
+    elif int(version) == 9:
+        for g in range(int(num_games)):
+            print '\nGame {i} of {n}'.format(i=(g+1), n=int(num_games))
+            game_id = raw_input('\tGame ID? ')
+            game_id_list.append(str(game_id))
+        r = FibaLineupReportPLeague(game_id_list)
+
+    else: 
+        print 'NOT SUPPORT'
+        return
 
     print '\n## Advanced Lineup Stats\n' + r._gen_lineup_stats_md(secs_above=int(secs_above)) + \
         '\n## On/Off Stats\n' + r._gen_on_off_stats_md()

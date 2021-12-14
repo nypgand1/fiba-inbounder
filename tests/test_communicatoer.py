@@ -1,11 +1,16 @@
 from fiba_inbounder.communicator import FibaCommunicator
 
+def test_get_game_play_by_play_pleague():
+    result = FibaCommunicator.get_game_play_by_play_pleague(game_id='12', team_id='1')
+    assert result[0]['createDate'] == 1606042017000
+    assert result[0]['eventName'] == 'assist'
+
 def test_get_game_data_v5():
     result = FibaCommunicator.get_game_data_v5(match_id='1143749')
     assert result['tm']['1']['name'] == 'Singapore Slingers'
 
 def test_get_game_team_stats_v7():
-    result = FibaCommunicator.get_game_team_stats_v7(event_id='208053', game_unit='24532-18-A')
+    result = FibaCommunicator.get_game_stats_v7(event_id='208053', game_unit='24532-18-A')
     assert result['content']['full']['Competitors'][0]['Name'] == 'Pauian'
 
 def test_get_game_play_by_play_v7():
