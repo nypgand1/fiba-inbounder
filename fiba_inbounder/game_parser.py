@@ -23,6 +23,7 @@ class FibaGameParser:
             t = game_json[u'team_stats_' + ha]
             t['Name'] = game_json[ha + '_name']
             t['TeamCode'] = game_json[ha + '_name']
+            t['IsHome'] = ha
 
             t['Periods'] = [
                     {'Id': 'Q' + str(q+1), 'Score': score} if q < 4 else
