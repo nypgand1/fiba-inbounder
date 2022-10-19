@@ -4,12 +4,47 @@ from fiba_inbounder.settings import LOGGER
 from fiba_inbounder.settings import FIBA_DATA_URL_V5, FIBA_GAME_STATS_URL_V7, \
         FIBA_PLAY_BY_PLAY_URL_V7, FIBA_DETAIL_URL_V7, \
         PLEAGUE_GAME_STATS_URL, PLEAGUE_SUB_URL, PLEAGUE_PLAY_BY_PLAY_URL
+from fiba_inbounder.settings_synergy import SYNERGY_TOKEN_URL, SYNERGY_PLAY_BY_PLAY_URL,\
+        SYNERGY_CREDENTIAL_ID, SYNERGY_CREDENTIAL_SECRET, SYNERGY_BEARER,\
+        SYNERGY_ORGANIZATION_ID
+
+class BearerAuth(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token
+    def __call__(self, r):
+        r.headers['authorization'] = 'Bearer ' + self.token
+        return r
 
 class FibaCommunicator:
     @staticmethod
-    def get(url, params=None, **kwargs):
+    def get(url, params=None, headers=dict(), **kwargs):
         r = requests.get(url, params, **kwargs)
         LOGGER.info('{r} GET {url}'.format(r=r, url=url))
+        return r
+
+    @staticmethod
+    def post_synergy_for_token():
+        url = SYNERGY_TOKEN_URL
+        r = requests.post(url, json={
+                'credentialId': SYNERGY_CREDENTIAL_ID,
+                'credentialSecret': SYNERGY_CREDENTIAL_SECRET,
+                'sport': 'basketball',
+                'organization': {'id': [SYNERGY_ORGANIZATION_ID]},
+                'scopes': ['read:organization', 'read:organization_live']
+            }
+        )
+        LOGGER.info('{r} POST {url}'.format(r=r, url=url))
+        return r
+
+    @staticmethod
+    def get_synergy(url, params=dict(), headers=dict(), **kwargs):
+        global SYNERGY_BEARER
+        r = FibaCommunicator.get(url, params=params, headers=headers, auth=BearerAuth(SYNERGY_BEARER), **kwargs)
+
+        if r.status_code == requests.codes.forbidden:
+            SYNERGY_BEARER = FibaCommunicator.post_synergy_for_token().json().get('data', {}).get('token')
+            r = FibaCommunicator.get(url, params=params, headers=headers, auth=BearerAuth(SYNERGY_BEARER), **kwargs)
+
         return r
 
     @staticmethod
@@ -61,4 +96,11 @@ class FibaCommunicator:
     def get_game_play_by_play_pleague(game_id, team_id):
         url = PLEAGUE_PLAY_BY_PLAY_URL.format(game_id=game_id, team_id=team_id)
         r = FibaCommunicator.get_pleague(url)
+        return r.json()
+
+    @staticmethod
+    def get_game_play_by_play_synergy(org_id, game_id, period_id):
+        url = SYNERGY_PLAY_BY_PLAY_URL.format(organizationId=org_id, fixtureId=game_id)
+        params = {'periodId': period_id}
+        r = FibaCommunicator.get_synergy(url, params=params)
         return r.json()

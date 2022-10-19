@@ -1,5 +1,19 @@
 from fiba_inbounder.communicator import FibaCommunicator
 
+def test_post_synergy_for_token():
+    result = FibaCommunicator.post_synergy_for_token().json()
+    assert result['data']['tokenType'] == 'Bearer'
+    assert result['data']['expiresIn'] == 10800
+
+def test_get_game_play_by_play_synergy():
+    result = FibaCommunicator.get_game_play_by_play_synergy('b1vqz', 'e6cb4f05-3e5b-11ed-afde-5d17350689cf', '1')
+    assert result['data'][0]['eventType'] == 'fixture'
+    assert result['data'][0]['subType'] == 'pending'
+
+    result = FibaCommunicator.get_game_play_by_play_synergy('b1vqz', 'e6cb4f05-3e5b-11ed-afde-5d17350689cf', '2')
+    assert result['data'][264]['eventType'] == 'period'
+    assert result['data'][264]['subType'] == 'confirmed'
+
 def test_get_game_play_by_play_pleague():
     result = FibaCommunicator.get_game_play_by_play_pleague(game_id='12', team_id='1')
     assert result[0]['createDate'] == 1606042017000

@@ -1,3 +1,7 @@
+#custom
+output/
+fiba_inbounder/settings_synergy.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
