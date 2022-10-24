@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+from fiba_inbounder.settings_synergy import SYNERGY_ORGANIZATION_ID
 from fiba_inbounder.game_parser import FibaGameParser
 from fiba_inbounder.formulas import score_bold_md, update_efg, update_four_factors, update_usg, \
-    update_zone, update_zone_pleague, update_range, update_range_stats, update_lineup, \
+    update_zone, update_zone_pleague, update_range, update_range_stats, update_lineup, update_lineup_synergy, \
     get_lineup_stats, get_player_mins_plus_minus
 
 class FibaPostGameReport(object):
@@ -145,6 +146,19 @@ class FibaPostGameReport(object):
  
         return '\n'.join(result_str_list) + '\n'
 
+class FibaPostGameReportSynergy(FibaPostGameReport):
+    def __init__(self, game_id):
+        #TODO get period_id_list
+        period_id_list = [1, 2]
+        #TODO get id_table
+        org_id = SYNERGY_ORGANIZATION_ID
+
+        self.player_stats_df, self.starter_dict = FibaGameParser.get_game_stats_dataframe_synergy(org_id, game_id)
+        self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_synergy(org_id, game_id, period_id_list)
+
+        update_lineup_synergy(self.pbp_df, self.starter_dict)
+        self.sub_df = self.pbp_df[self.pbp_df['eventType']=='substitution']
+
 class FibaPostGameReportPLeague(FibaPostGameReport):
     def __init__(self, game_id):
         self.team_stats_df, self.player_stats_df, self.team_id_away, self.team_id_home, self.id_table = FibaGameParser.get_game_stats_dataframe_pleague(game_id)
@@ -195,7 +209,7 @@ except NameError:
     raw_input = input
 
 def main():
-    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(9) P League\n')
+    version = raw_input('fiba stats version?\n\t(5) v5\n\t(7) v7\n\t(8) Synergy\n\t(9) P League\n')
 
     if int(version) == 5:
         match_id = raw_input('Match Id? ')
@@ -206,6 +220,12 @@ def main():
         game_unit = raw_input('Game Unit? ')
         r = FibaPostGameReportV7(str(event_id), str(game_unit))
         
+    elif int(version) == 8:
+        game_id = raw_input('Game Id? ')
+        r = FibaPostGameReportSynergy(str(game_id))
+        #TODO skip for now
+        return
+
     elif str(version) == '9':
         game_id = raw_input('Game Id? ')
         r = FibaPostGameReportPLeague(str(game_id))

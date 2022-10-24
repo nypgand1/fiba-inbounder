@@ -4,8 +4,9 @@ from fiba_inbounder.settings import LOGGER
 from fiba_inbounder.settings import FIBA_DATA_URL_V5, FIBA_GAME_STATS_URL_V7, \
         FIBA_PLAY_BY_PLAY_URL_V7, FIBA_DETAIL_URL_V7, \
         PLEAGUE_GAME_STATS_URL, PLEAGUE_SUB_URL, PLEAGUE_PLAY_BY_PLAY_URL
-from fiba_inbounder.settings_synergy import SYNERGY_TOKEN_URL, SYNERGY_PLAY_BY_PLAY_URL,\
-        SYNERGY_CREDENTIAL_ID, SYNERGY_CREDENTIAL_SECRET, SYNERGY_BEARER,\
+from fiba_inbounder.settings_synergy import SYNERGY_TOKEN_URL, \
+        SYNERGY_PLAY_BY_PLAY_URL, SYNERGY_PLAYER_STATS_URL, \
+        SYNERGY_CREDENTIAL_ID, SYNERGY_CREDENTIAL_SECRET, SYNERGY_BEARER, \
         SYNERGY_ORGANIZATION_ID
 
 class BearerAuth(requests.auth.AuthBase):
@@ -96,6 +97,13 @@ class FibaCommunicator:
     def get_game_play_by_play_pleague(game_id, team_id):
         url = PLEAGUE_PLAY_BY_PLAY_URL.format(game_id=game_id, team_id=team_id)
         r = FibaCommunicator.get_pleague(url)
+        return r.json()
+
+    @staticmethod
+    def get_game_player_stats_synergy(org_id, game_id):
+        url = SYNERGY_PLAYER_STATS_URL.format(organizationId=org_id, fixtureId=game_id)
+        params = {'limit': 1000, 'isPlayer': 'true'}
+        r = FibaCommunicator.get_synergy(url, params=params)
         return r.json()
 
     @staticmethod

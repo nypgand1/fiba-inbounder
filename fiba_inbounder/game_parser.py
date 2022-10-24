@@ -11,6 +11,41 @@ from fiba_inbounder.converter import game_time, base60_from, base60_to, \
 
 class FibaGameParser:
     @staticmethod
+    def get_game_play_by_play_dataframe_synergy(org_id, game_id, period_id_list):
+        #fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
+        
+        pbp_json_list = [
+            FibaCommunicator.get_game_play_by_play_synergy(org_id, game_id, p)['data']
+            for p in period_id_list]
+        df = pd.DataFrame(sum(pbp_json_list, []))
+        
+        #no converting for synergy data
+        #print for dev
+        for i in df.index:
+            print df['periodId'][i], df['clock'][i], df['scores'][i], \
+                df['eventType'][i], df['subType'][i], df['success'][i], df['options'][i], df['x'][i], df['y'][i], \
+                df['playId'][i], df['entityId'][i], df['personId'][i]
+        
+        return df
+
+    @staticmethod
+    def get_game_stats_dataframe_synergy(org_id, game_id):
+        #TODO team stats
+        
+        player_stats_list = [p for p in FibaCommunicator.get_game_player_stats_synergy(org_id, game_id)['data'] if p['participated']]
+        player_stats_df = pd.DataFrame(player_stats_list)
+        
+        for p in player_stats_list:
+            print p['statistics']['minutes']
+
+        team_id_set = {p['entityId'] for p in player_stats_list}
+        starter_dict = {team_id: {p['personId'] for p in player_stats_list if p['starter'] and p['entityId'] == team_id}
+                for team_id in team_id_set}
+        print starter_dict
+
+        return player_stats_df, starter_dict
+
+    @staticmethod
     def get_game_stats_dataframe_pleague(game_id):
         fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
         game_json = FibaCommunicator.get_game_stats_pleague(game_id)
