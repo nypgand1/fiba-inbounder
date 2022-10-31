@@ -149,10 +149,10 @@ class FibaPostGameReport(object):
 class FibaPostGameReportSynergy(FibaPostGameReport):
     def __init__(self, game_id):
         #TODO get period_id_list
-        period_id_list = [1, 2]
-        #TODO get id_table
+        period_id_list = [1, 2, 3, 4]
+        
         org_id = SYNERGY_ORGANIZATION_ID
-
+        self.id_table = FibaGameParser.get_id_tables_synergy(org_id)
         self.player_stats_df, self.starter_dict = FibaGameParser.get_game_stats_dataframe_synergy(org_id, game_id)
         
         self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_synergy(org_id, game_id, period_id_list)

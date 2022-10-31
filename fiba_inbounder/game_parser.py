@@ -18,22 +18,16 @@ class FibaGameParser:
         df = pd.DataFrame(sum(pbp_json_list, []))
         
         #no converting for synergy data
-        #print for dev
-        '''
-        for i in df.index:
-            print df['periodId'][i], df['clock'][i], df['scores'][i], \
-                df['eventType'][i], df['subType'][i], df['success'][i], df['options'][i], df['x'][i], df['y'][i], \
-                df['playId'][i], df['entityId'][i], df['personId'][i]
-        '''
         return df
 
     @staticmethod
     def get_game_stats_dataframe_synergy(org_id, game_id):
-        #TODO team stats
+        #TODO get team stats
         
         player_stats_list = [p for p in FibaCommunicator.get_game_player_stats_synergy(org_id, game_id)['data'] if p['participated']]
         player_stats_df = pd.DataFrame(player_stats_list)
         
+        #TODO parse player stats
         for p in player_stats_list:
             print p['statistics']['minutes']
 
@@ -42,6 +36,13 @@ class FibaGameParser:
                 for team_id in team_id_set}
 
         return player_stats_df, starter_dict
+
+    @staticmethod
+    def get_id_tables_synergy(org_id):
+        persons_json_list = FibaCommunicator.get_org_persons_synergy(org_id)['data']
+        id_table = {p['personId']: p['nameFullLocal'] for p in persons_json_list}
+
+        return id_table
 
     @staticmethod
     def get_game_stats_dataframe_pleague(game_id):
