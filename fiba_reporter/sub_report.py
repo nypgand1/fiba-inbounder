@@ -2,6 +2,7 @@
 
 import pandas as pd
 from fiba_reporter.post_game_report import FibaPostGameReportSynergy
+from fiba_inbounder.formulas import get_sub_map_synergy
 '''
 from fiba_inbounder.formulas import update_zone, update_zone_pleague, \
         update_range, update_range_stats
@@ -39,7 +40,7 @@ class FibaSubReport():
 class FibaSubReportSynergy(FibaSubReport):
     def __init__(self, game_id_list):
         r_list = [FibaPostGameReportSynergy(game_id) for game_id in game_id_list]
-        self.sub_df = pd.concat([r.sub_df for r in r_list], sort=False)
+        self.sub_map_df = pd.concat([get_sub_map_synergy(r.sub_df) for r in r_list], sort=False)
         #TODO get id_table
         #self.id_table = {k: v for r in r_list for k, v in r.id_table.items()}
 

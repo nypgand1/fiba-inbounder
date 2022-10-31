@@ -14,18 +14,17 @@ class FibaGameParser:
     def get_game_play_by_play_dataframe_synergy(org_id, game_id, period_id_list):
         #fiba_inbounder.formulas.REG_FULL_GAME_MINS = 48
         
-        pbp_json_list = [
-            FibaCommunicator.get_game_play_by_play_synergy(org_id, game_id, p)['data']
-            for p in period_id_list]
+        pbp_json_list = [FibaCommunicator.get_game_play_by_play_synergy(org_id, game_id, p)['data'] for p in period_id_list]
         df = pd.DataFrame(sum(pbp_json_list, []))
         
         #no converting for synergy data
         #print for dev
+        '''
         for i in df.index:
             print df['periodId'][i], df['clock'][i], df['scores'][i], \
                 df['eventType'][i], df['subType'][i], df['success'][i], df['options'][i], df['x'][i], df['y'][i], \
                 df['playId'][i], df['entityId'][i], df['personId'][i]
-        
+        '''
         return df
 
     @staticmethod
@@ -41,7 +40,6 @@ class FibaGameParser:
         team_id_set = {p['entityId'] for p in player_stats_list}
         starter_dict = {team_id: {p['personId'] for p in player_stats_list if p['starter'] and p['entityId'] == team_id}
                 for team_id in team_id_set}
-        print starter_dict
 
         return player_stats_df, starter_dict
 

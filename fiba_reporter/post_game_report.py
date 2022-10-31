@@ -154,10 +154,10 @@ class FibaPostGameReportSynergy(FibaPostGameReport):
         org_id = SYNERGY_ORGANIZATION_ID
 
         self.player_stats_df, self.starter_dict = FibaGameParser.get_game_stats_dataframe_synergy(org_id, game_id)
+        
         self.pbp_df = FibaGameParser.get_game_play_by_play_dataframe_synergy(org_id, game_id, period_id_list)
-
         update_lineup_synergy(self.pbp_df, self.starter_dict)
-        self.sub_df = self.pbp_df[self.pbp_df['eventType']=='substitution']
+        self.sub_df = self.pbp_df[self.pbp_df['eventType'].isin(['substitution', 'period'])]
 
 class FibaPostGameReportPLeague(FibaPostGameReport):
     def __init__(self, game_id):

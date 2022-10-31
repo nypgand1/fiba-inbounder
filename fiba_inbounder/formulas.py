@@ -190,42 +190,6 @@ def update_range_stats(df):
     df['FREQ_STR'] = df['FREQ'].apply(lambda x: '**%.1f%%**' % x if x >= 40 else '%.1f%%' % x)
     df['EFG_STR'] = df['EFG'].apply(lambda x: '**%.1f%%**' % x if x >= 50 else '%.1f%%' % x)
 
-def update_lineup_synergy(df, starter_dict):
-    for t in starter_dict.keys():
-        df.loc[:, t] = [starter_dict[t]] * len(df)
-  
-        df['in_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='in') and (x['entityId']==t) else [], axis=1)
-        df['out_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='out') and (x['entityId']==t) else [], axis=1)
-        in_cum_team = 'in_cum_{team}'.format(team=t)
-        out_cum_team = 'out_cum_{team}'.format(team=t)
-        df[in_cum_team] = df['in_{team}'.format(team=t)].cumsum()
-        df[out_cum_team] = df['out_{team}'.format(team=t)].cumsum()
-        
-        def cum_add_remove(r):
-            lineup = list(r[t])
-            for p in r[in_cum_team]:
-                lineup.append(p)
-            for p in r[out_cum_team]:
-                lineup.remove(p)
-            return set(lineup)
-
-        df[t] = df.apply(lambda x: cum_add_remove(x), axis=1)
-
-    # print for dev
-    t_list = [t for t in df['entityId'].unique() if t]
-    for i in df.index:
-        print df['periodId'][i], df['clock'][i], df['scores'][i], \
-            df['eventType'][i], df['subType'][i], df['success'][i], df['options'][i], df['x'][i], df['y'][i], \
-            df['playId'][i], df['entityId'][i], df['personId'][i]
-        print df['entityId'][i], df['eventType'][i], df['subType'][i], df['personId'][i]
-        print t_list[0]
-        print df[t_list[0]][i]
-        print t_list[1]
-        print df[t_list[1]][i]
-        #print df['in_cum_{team}'.format(team=t)][i]
-        #print df['out_cum_{team}'.format(team=t)][i]
-        print '-----------------------------------'
- 
 def update_lineup(df, starter_dict):
     pbp_dict = df.to_dict(orient='records')
 
@@ -274,6 +238,67 @@ def update_lineup(df, starter_dict):
     for t in starter_dict.keys():
         df[t] = pbp_df[t].apply(lambda x: to_sorted_tuple(x))
     df['SECS'] = pbp_df['SECS']
+
+def update_lineup_synergy(df, starter_dict):
+    for t in starter_dict.keys():
+        df.loc[:, t] = [starter_dict[t]] * len(df)
+  
+        df['in_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='in') and (x['entityId']==t) else [], axis=1)
+        df['out_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='out') and (x['entityId']==t) else [], axis=1)
+        in_cum_team = 'in_cum_{team}'.format(team=t)
+        out_cum_team = 'out_cum_{team}'.format(team=t)
+        df[in_cum_team] = df['in_{team}'.format(team=t)].cumsum()
+        df[out_cum_team] = df['out_{team}'.format(team=t)].cumsum()
+        
+        def cum_add_remove(r):
+            lineup = list(r[t])
+            for p in r[in_cum_team]:
+                lineup.append(p)
+            for p in r[out_cum_team]:
+                lineup.remove(p)
+            return set(lineup)
+
+        df[t] = df.apply(lambda x: cum_add_remove(x), axis=1)
+
+        def set_period_event_clock(r):
+            if r['eventType'] != 'period':
+                return r['clock']
+            else:
+                if r['subType'] in ['pending', 'start']:
+                    if r['periodId'] in [1, 2, 3, 4]:
+                        return 'PT12M0S'
+                    else: #overtime
+                        return 'PT5M0S'
+                elif r['subType'] in ['end', 'confirmed']:
+                        return 'PT0M0S'
+                else:
+                    return r['clock']
+        df['clock'] = df.apply(lambda x: set_period_event_clock(x), axis=1)
+
+def get_sub_map_synergy(df): 
+    # print for dev
+    def print_df(df):
+        for i in df.index:
+            print df['periodId'][i], df['clock'][i], df['scores'][i], \
+                df['eventType'][i], df['subType'][i], df['success'][i], df['options'][i], df['x'][i], df['y'][i], \
+                df['playId'][i], df['entityId'][i], df['personId'][i]
+            print df['entityId'][i], df['eventType'][i], df['subType'][i], df['personId'][i]
+            print t_list[0]
+            print df[t_list[0]][i]
+            print t_list[1]
+            print df[t_list[1]][i]
+            print '-----------------------------------'
+ 
+    t_list = [t for t in df['entityId'].unique() if t]
+    for t in t_list:
+        df_team = df[df['entityId']==t]
+        for p in df_team['personId']:
+            print '\n{p}\n'.format(p=p)
+            df_player = df_team[df_team['personId']==p]
+            print_df(df_player)
+   
+    result_df = df
+    return result_df
 
 def get_lineup_stats(df, team_id, id_table=None):
     update_efg(df)
