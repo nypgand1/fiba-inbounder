@@ -239,6 +239,77 @@ def update_lineup(df, starter_dict):
         df[t] = pbp_df[t].apply(lambda x: to_sorted_tuple(x))
     df['SECS'] = pbp_df['SECS']
 
+def update_lineup_synergy(df, starter_dict):
+    for t in starter_dict.keys():
+        df.loc[:, t] = [starter_dict[t]] * len(df)
+  
+        df['in_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='in') and (x['entityId']==t) else [], axis=1)
+        df['out_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='out') and (x['entityId']==t) else [], axis=1)
+        in_cum_team = 'in_cum_{team}'.format(team=t)
+        out_cum_team = 'out_cum_{team}'.format(team=t)
+        df[in_cum_team] = df['in_{team}'.format(team=t)].cumsum()
+        df[out_cum_team] = df['out_{team}'.format(team=t)].cumsum()
+        
+        def cum_add_remove(r):
+            lineup = list(r[t])
+            for p in r[in_cum_team]:
+                lineup.append(p)
+            for p in r[out_cum_team]:
+                lineup.remove(p)
+            return set(lineup)
+
+        df[t] = df.apply(lambda x: cum_add_remove(x), axis=1)
+
+        def set_period_event_clock(r):
+            if r['eventType'] != 'period':
+                return r['clock']
+            else:
+                if r['subType'] in ['pending', 'start']:
+                    if r['periodId'] in [1, 2, 3, 4]:
+                        return 'PT12M0S'
+                    else: #overtime
+                        return 'PT5M0S'
+                elif r['subType'] in ['end', 'confirmed']:
+                        return 'PT0M0S'
+                else:
+                    return r['clock']
+        df['clock'] = df.apply(lambda x: set_period_event_clock(x), axis=1)
+
+def get_sub_map_synergy(df): 
+    result_list = list()
+    for t in [t for t in df['entityId'].unique() if t]:
+        df_team = df[(df['entityId']==t) | ((df['eventType']=='period') & (df['subType'].isin(['pending', 'confirmed'])))]
+        for p in [p for p in df_team['personId'].unique() if p]:
+            df_team['selected'] = df_team.apply(lambda x: (x['personId']==p) or ((x['eventType']=='period') and (p in x[t])), axis=1)
+            df_player = df_team[df_team['selected']].reindex()
+            
+            df_player['clock'] = pd.to_datetime(df_player['clock'], format='PT%MM%SS')
+            df_player['clock_prev'] = df_player['clock'].shift(1)
+            df_duration = df_player[df_player['subType'].isin(['out', 'confirmed'])]
+
+            player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if f][0]}
+            for i, r in df_duration.iterrows():
+                #TODO: if it's not 12-min period
+                if r['periodId'] not in [1, 2, 3, 4]: #overtime
+                    player_sub_map['OT'] = player_sub_map.get('OT', (r['clock_prev']-r['clock']).seconds)
+                elif r['clock'].minute == r['clock_prev'].minute:
+                    if r['clock'].second != r['clock_prev'].second: #not same
+                        pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-r['clock'].minute)
+                        player_sub_map[pm_str] = player_sub_map.get(pm_str, 0) + r['clock_prev'].second - r['clock'].second
+                else:
+                    if r['clock_prev'].second: #not 0 Seconds
+                        pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-r['clock_prev'].minute)
+                        player_sub_map[pm_str] = player_sub_map.get(pm_str, 0) + r['clock_prev'].second
+                    pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-r['clock'].minute)
+                    player_sub_map[pm_str] = player_sub_map.get(pm_str, 0) + 60 - r['clock'].second
+                    for m in range(r['clock_prev'].minute-1, r['clock'].minute, -1):
+                        pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-m)
+                        player_sub_map[pm_str] = 60
+            result_list.append(player_sub_map)
+        
+    result_df = pd.DataFrame(result_list)
+    return result_df
+
 def get_lineup_stats(df, team_id, id_table=None):
     update_efg(df)
     update_to_ratio(df)
