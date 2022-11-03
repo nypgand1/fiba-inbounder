@@ -13,6 +13,7 @@ from fiba_reporter.post_game_report import FibaPostGameReportSynergy
 
 fm._rebuild()
 plt.rcParams['font.family'] = ['Noto Snas TC']
+plt.rcParams['figure.figsize'] = 12.78, 4.8
 sns.set(font_scale=0.7)
 sns.set(font=fm.FontProperties(fname=FONT_PATH).get_family())
 sns.set_style('whitegrid', {'font.sans-serif':['Noto Sans TC']})
@@ -27,13 +28,13 @@ class FibaSubReport():
             for col in sub_heatmap_df.columns.tolist():
                 sub_heatmap_df[col] = sub_heatmap_df[col] / sub_heatmap_df[col].sum()
 
-            plt.title(t)
-            hm = sns.heatmap(sub_heatmap_df, cmap='PuBu', linewidths=0.5, xticklabels=12, cbar=False)
-            hm.set_xticklabels(hm.get_xticklabels(), rotation=90, fontsize=7)
-            fig = hm.get_figure()
-            
+            ax = sns.heatmap(sub_heatmap_df, cmap='PuBu', linewidths=0.5, xticklabels=12, cbar=False)
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=90, fontsize=7)
+            ax.set(xlabel='', ylabel='')
+
             filename = u'./output/heatmap/{team}.png'.format(team=t)
             LOGGER.info(u'Generate Sub Heatmap to {filename}'.format(filename=filename))
+            fig = ax.get_figure()
             fig.savefig(filename)
 
 class FibaSubReportSynergy(FibaSubReport):
