@@ -239,7 +239,7 @@ def update_lineup(df, starter_dict):
         df[t] = pbp_df[t].apply(lambda x: to_sorted_tuple(x))
     df['SECS'] = pbp_df['SECS']
 
-def update_lineup_synergy(df, starter_dict):
+def update_lineup_synergy(df, starter_dict, id_table):
     for t in starter_dict.keys():
         df.loc[:, t] = [starter_dict[t]] * len(df)
   
@@ -249,13 +249,27 @@ def update_lineup_synergy(df, starter_dict):
         out_cum_team = 'out_cum_{team}'.format(team=t)
         df[in_cum_team] = df['in_{team}'.format(team=t)].cumsum()
         df[out_cum_team] = df['out_{team}'.format(team=t)].cumsum()
-        
+       
+
+        print '\n[team %s]' % t
+        for i, r in df[(df['eventType']=='substitution') & (df['entityId']==t) & (df['periodId']==1)].iterrows():
+                print r['eventId'], r['periodId'], r['clock'], r['eventType'], r['subType'], id_table.get(r['personId'], r['personId']), r['timestamp']
+
+        print '----'
         def cum_add_remove(r):
+            #TODO print for debug
+            if r['eventType'] == 'substitution' and r['entityId']==t:
+                print r['eventId'], r['periodId'], r['clock'], r['eventType'], r['subType'], id_table.get(r['personId'], r['personId']), r['timestamp']
             lineup = list(r[t])
             for p in r[in_cum_team]:
                 lineup.append(p)
             for p in r[out_cum_team]:
                 lineup.remove(p)
+            #TODO print for debug
+            if r['eventType'] == 'substitution' and r['entityId']==t:
+                print 'after sub'
+                for p in [id_table.get(p, p) for p in lineup]:
+                    print p
             return set(lineup)
 
         df[t] = df.apply(lambda x: cum_add_remove(x), axis=1)
@@ -277,9 +291,9 @@ def update_lineup_synergy(df, starter_dict):
 
 def get_sub_map_synergy(df): 
     result_list = list()
-    for t in [t for t in df['entityId'].unique() if t]:
+    for t in [t for t in df['entityId'].unique() if not pd.isna(t)]:
         df_team = df[(df['entityId']==t) | ((df['eventType']=='period') & (df['subType'].isin(['pending', 'confirmed'])))]
-        for p in [p for p in df_team['personId'].unique() if p]:
+        for p in [p for p in df_team['personId'].unique() if not pd.isna(p)]:
             df_team['selected'] = df_team.apply(lambda x: (x['personId']==p) or ((x['eventType']=='period') and (p in x[t])), axis=1)
             df_player = df_team[df_team['selected']].reindex()
             
@@ -287,11 +301,11 @@ def get_sub_map_synergy(df):
             df_player['clock_prev'] = df_player['clock'].shift(1)
             df_duration = df_player[df_player['subType'].isin(['out', 'confirmed'])]
 
-            player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if f][0]}
+            player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if not pd.isin(f)][0]}
             for i, r in df_duration.iterrows():
                 #TODO: if it's not 12-min period
                 if r['periodId'] not in [1, 2, 3, 4]: #overtime
-                    player_sub_map['OT'] = player_sub_map.get('OT', (r['clock_prev']-r['clock']).seconds)
+                    player_sub_map['OT'] = player_sub_map.get('OT', 0) + (r['clock_prev']-r['clock']).seconds
                 elif r['clock'].minute == r['clock_prev'].minute:
                     if r['clock'].second != r['clock_prev'].second: #not same
                         pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-r['clock'].minute)
@@ -307,6 +321,30 @@ def get_sub_map_synergy(df):
                         player_sub_map[pm_str] = 60
             result_list.append(player_sub_map)
         
+    result_df = pd.DataFrame(result_list)
+    return result_df
+
+def get_score_map_synergy(df): 
+    result_list = list()
+    point_map = {'freeThrow': 1, '2pt': 2, '3pt': 3}
+    
+    for t in [t for t in df['entityId'].unique() if not pd.isna(t)]:
+        df_team = df[(df['entityId']==t) & (df['success'])]
+        df_team['score_point'] = df_team['eventType'].apply(lambda x: point_map[x])
+        df_team['clock'] = pd.to_datetime(df_team['clock'], format='PT%MM%SS')
+        
+        team_score_map = {'{period}Q{minute:0>2d}M'.format(period=p, minute=m): 0 for p in [1, 2, 3, 4] for m in range(0, 12)}
+        team_score_map['entityId'] = t
+        team_score_map['fixtureId'] = [f for f in df['fixtureId'] if not pd.isna(f)][0]
+        
+        for i, r in df_team.iterrows():
+            if r['periodId'] not in [1, 2, 3, 4]: #overtime
+                team_score_map['OT'] = team_score_map.get('OT', 0) + r['score_point']
+            else:
+                pm_str = '{period}Q{minute:0>2d}M'.format(period=r['periodId'], minute=11-r['clock'].minute)
+                team_score_map[pm_str] = team_score_map[pm_str] + r['score_point']
+        result_list.append(team_score_map)
+
     result_df = pd.DataFrame(result_list)
     return result_df
 

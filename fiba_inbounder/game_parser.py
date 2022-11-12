@@ -42,6 +42,9 @@ class FibaGameParser:
         persons_json_list = FibaCommunicator.get_org_persons_synergy(org_id)['data']
         id_table = {p['personId']: p['nameFullLocal'] for p in persons_json_list}
 
+        entities_json_list = FibaCommunicator.get_org_entities_synergy(org_id)['data']
+        id_table.update({t['entityId']: t['nameFullLocal'] for t in entities_json_list})
+
         return id_table
 
     @staticmethod
