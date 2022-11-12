@@ -301,7 +301,7 @@ def get_sub_map_synergy(df):
             df_player['clock_prev'] = df_player['clock'].shift(1)
             df_duration = df_player[df_player['subType'].isin(['out', 'confirmed'])]
 
-            player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if not pd.isin(f)][0]}
+            player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if not pd.isna(f)][0]}
             for i, r in df_duration.iterrows():
                 #TODO: if it's not 12-min period
                 if r['periodId'] not in [1, 2, 3, 4]: #overtime
