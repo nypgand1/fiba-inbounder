@@ -33,7 +33,7 @@ class FibaTimelineReport():
             ax.set_xticklabels(ax.get_xticklabels(), rotation=90, fontsize=7)
             ax.set(xlabel='', ylabel='')
 
-            filename = u'./output/heatmap/sub/{team}.png'.format(team=t)
+            filename = u'./output/heatmap/sub/{team}.png'.format(team=self.id_table.get(t, t))
             LOGGER.info(u'Generate Sub Heatmap to {filename}'.format(filename=filename))
             fig.savefig(filename)
 
