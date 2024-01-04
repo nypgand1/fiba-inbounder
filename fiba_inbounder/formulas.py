@@ -241,39 +241,25 @@ def update_lineup(df, starter_dict):
 
 def update_lineup_synergy(df, starter_dict, id_table):
     for t in starter_dict.keys():
-        df.loc[:, t] = [starter_dict[t]] * len(df)
-  
-        df['in_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='in') and (x['entityId']==t) else [], axis=1)
-        df['out_{team}'.format(team=t)] = df.apply(lambda x: [x['personId']] if (x['eventType']=='substitution') and (x['subType']=='out') and (x['entityId']==t) else [], axis=1)
-        in_cum_team = 'in_cum_{team}'.format(team=t)
-        out_cum_team = 'out_cum_{team}'.format(team=t)
-        df[in_cum_team] = df['in_{team}'.format(team=t)].cumsum()
-        df[out_cum_team] = df['out_{team}'.format(team=t)].cumsum()
-       
-
-        print '\n[team %s]' % t
-        for i, r in df[(df['eventType']=='substitution') & (df['entityId']==t) & (df['periodId']==1)].iterrows():
-                print r['eventId'], r['periodId'], r['clock'], r['eventType'], r['subType'], id_table.get(r['personId'], r['personId']), r['timestamp']
-
-        print '----'
-        def cum_add_remove(r):
-            #TODO print for debug
-            if r['eventType'] == 'substitution' and r['entityId']==t:
-                print r['eventId'], r['periodId'], r['clock'], r['eventType'], r['subType'], id_table.get(r['personId'], r['personId']), r['timestamp']
-            lineup = list(r[t])
-            for p in r[in_cum_team]:
-                lineup.append(p)
-            for p in r[out_cum_team]:
-                lineup.remove(p)
-            #TODO print for debug
-            if r['eventType'] == 'substitution' and r['entityId']==t:
-                print 'after sub'
-                for p in [id_table.get(p, p) for p in lineup]:
-                    print p
-            return set(lineup)
-
-        df[t] = df.apply(lambda x: cum_add_remove(x), axis=1)
-
+        df.loc[0, t] = [starter_dict[t]]
+        for i in range(1, len(df)):
+            if df.loc[i, 'eventType'] == 'substitution' and df.loc[i, 'entityId'] == t:
+                print df.loc[i, 'eventId'], df.loc[i, 'periodId'], df.loc[i, 'clock'], df.loc[i, 'eventType'], df.loc[i, 'subType'], id_table.get(df.loc[i, 'personId'], df.loc[i, 'personId']), df.loc[i, 'timestamp']
+                lineup = list(df.loc[i-1, t])
+                if df.loc[i, 'subType'] == 'in':
+                    if df.loc[i, 'personId'] in lineup:
+                        raw_input('**Error** Sub in a player already in')
+                    else:
+                        lineup.append(df.loc[i, 'personId'])
+                elif df.loc[i, 'subType'] == 'out':
+                    if df.loc[i, 'personId'] not in lineup:
+                        raw_input('**Error** Sub out a player already out')
+                    else:
+                        lineup.remove(df.loc[i, 'personId'])
+                df.loc[i, t] = [set(lineup)]
+            else:
+                df.loc[i, t] = [df.loc[i-1, t]]
+        
         def set_period_event_clock(r):
             if r['eventType'] != 'period':
                 return r['clock']
