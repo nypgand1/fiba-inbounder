@@ -249,17 +249,19 @@ def update_lineup_synergy(df, starter_dict, id_table):
                 if df.loc[i, 'subType'] == 'in':
                     if df.loc[i, 'personId'] in lineup:
                         raw_input('**Error** Sub in a player already in')
+                        df.loc[i, 'ERROR'] = 'ERROR'
                     else:
                         lineup.append(df.loc[i, 'personId'])
                 elif df.loc[i, 'subType'] == 'out':
                     if df.loc[i, 'personId'] not in lineup:
                         raw_input('**Error** Sub out a player already out')
+                        df.loc[i, 'ERROR'] = 'ERROR'
                     else:
                         lineup.remove(df.loc[i, 'personId'])
                 df.loc[i, t] = [set(lineup)]
             else:
                 df.loc[i, t] = [df.loc[i-1, t]]
-        
+
         def set_period_event_clock(r):
             if r['eventType'] != 'period':
                 return r['clock']
@@ -275,6 +277,10 @@ def update_lineup_synergy(df, starter_dict, id_table):
                     return r['clock']
         df['clock'] = df.apply(lambda x: set_period_event_clock(x), axis=1)
 
+    if 'ERROR' in df.columns:
+        df = df[df['ERROR'] != 'ERROR'] 
+    return df
+
 def get_sub_map_synergy(df): 
     result_list = list()
     for t in [t for t in df['entityId'].unique() if not pd.isna(t)]:
@@ -286,7 +292,6 @@ def get_sub_map_synergy(df):
             df_player['clock'] = pd.to_datetime(df_player['clock'], format='PT%MM%SS')
             df_player['clock_prev'] = df_player['clock'].shift(1)
             df_duration = df_player[df_player['subType'].isin(['out', 'confirmed'])]
-
             player_sub_map = {'entityId': t, 'personId': p, 'fixtureId': [f for f in df['fixtureId'] if not pd.isna(f)][0]}
             for i, r in df_duration.iterrows():
                 #TODO: if it's not 12-min period
